@@ -16,13 +16,16 @@ from keras.layers.normalization import BatchNormalization
 
 import pandas as pd
 import numpy as np
+
+import matplotlib as mpl
+mpl.use('Agg')
+
 import matplotlib.pyplot as plt
 np.random.seed(1000)
 
 
 from datetime import datetime
 
-get_ipython().magic('matplotlib inline')
 
 
 # In[2]:
