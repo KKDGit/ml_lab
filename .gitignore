@@ -1,3 +1,6 @@
 .ipynb_checkpoints/
 .project
 tf-lab/17flowers/
+metastore_db
+*.log
+*.jar
