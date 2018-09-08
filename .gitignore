@@ -4,3 +4,4 @@ tf-lab/17flowers/
 metastore_db
 *.log
 *.jar
+*.db
