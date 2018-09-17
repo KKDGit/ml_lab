@@ -5,3 +5,6 @@ metastore_db
 *.log
 *.jar
 *.db
+spark-scala/factors/
+spark-scala/stocks/
+spark-scala/stocksSample/
