@@ -1,0 +1,6 @@
+# Location for virtualenvs
+export WORKON_HOME=$HOME/.virtualenvs
+# Location for projecte
+export PROJECT_HOME=$HOME/dev
+# Load the virtualenvwrapper code
+source /usr/local/bin/virtualenvwrapper.sh
