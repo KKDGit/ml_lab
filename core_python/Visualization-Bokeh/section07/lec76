@@ -1,0 +1,13 @@
+Deploying Interactive Bokeh Server Apps as Standalone
+Section 7, Lecture 76
+In case you're wondering how to deploy standalone Bokeh Server apps without embedding them in Flask,
+the answer is you have already done that. In this section we deployed both Flask and Bokeh
+but our Bokeh Server app can also be accessed through port 5006.
+For example, mine is live at http://159.203.118.48:5006/. I can later connect that link to a domain name in
+DigitalOcean and have my Bokeh Server app accessed through it instead of typing in the IP and the port.
+ There are various domain registrars you can get a domain from such as GoDaddy, Namecheap, HoistGator, etc.
+ but DigitalOcean has a clear guide here on how to connect a domain (after purchasing the domain from the registrar).
+
+Similarly, if you want to deploy Flask apps with static Bokeh plots embedded in the Flask app,
+you repeat the same steps except you don't create a configuration file (i.e. bokeh_serve.conf) for Bokeh.
+You simply deploy the Flask app and the Bokeh graph is embedded in it as a one-time HTML script, so no need for Bokeh Server.
