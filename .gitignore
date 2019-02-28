@@ -5,9 +5,9 @@ metastore_db
 *.log
 *.jar
 *.db
-spark-scala/factors/
-spark-scala/stocks/
-spark-scala/stocksSample/
+spark-scala/aas/factors/
+spark-scala/aas/stocks/
+spark-scala/aas/stocksSample/
 
 *.sqlite3
 .idea
