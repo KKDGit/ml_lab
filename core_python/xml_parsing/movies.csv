@@ -1,0 +1,10 @@
+genre,decade,title,description,year,rating,format
+b'Action',b'1980s',b'Indiana Jones: The raiders of the lost Ark',"b""\n                'Archaeologist and adventurer Indiana Jones \n                is hired by the U.S. government to find the Ark of the \n                Covenant before the Nazis.'\n                """,b'1981',b'PG',b'DVD'
+b'Action',b'1980s',b'THE KARATE KID',b'None provided.',b'1984',b'PG',"b'DVD,Online'"
+b'Action',b'1980s',b'Back 2 the Future',b'Marty McFly',b'1985',b'PG',b'Blu-ray'
+b'Action',b'1990s',b'X-Men',b'Two mutants come to a private academy for their kind whose resident superhero team must \n               oppose a terrorist organization with similar powers.',b'2000',b'PG-13',"b'dvd, digital'"
+b'Action',b'1990s',b'Batman Returns',b'NA.',b'1992',b'PG13',b'VHS'
+b'Action',b'1990s',b'Reservoir Dogs',b'WhAtEvER I Want!!!?!',b'1992',b'R',b'Online'
+b'Thriller',b'1970s',b'ALIEN',"b'""""""""""""""""""'",b'1979',b'R',b'DVD'
+b'Thriller',b'1980s',"b""Ferris Bueller's Day Off""",b'Funny movie about a funny guy',b'1986',b'PG13',b'DVD'
+b'Thriller',b'1980s',b'American Psycho',b'psychopathic Bateman',b'2000',b'Unrated',b'blue-ray'
