@@ -1,0 +1,74 @@
+<library>
+    <book>
+      <title>Catcher in the Rye</title>
+      <author>J.D. Salinger</author>
+      <year>1951</year>
+      <pages>224</pages>
+    </book>
+    <journal>
+      <title>National Geographic</title>
+      <issue>170</issue>
+      <month>12</month>
+      <year>2005</year>
+    </journal>
+    <dvd>
+      <title>This is Spinal Tap</title>
+      <director>Rob Reiner</director>
+      <year>1984</year>
+      <length>82</length>
+    </dvd>
+    <cd>
+      <title>Live Fast, Die Fast</title>
+      <artist>Wolfsbane</artist>
+      <year>1989</year>
+      <length>35</length>
+    </cd>
+    <book>
+      <title>Daemon</title>
+      <author>Daniel Suarez</author>
+      <year>2009</year>
+      <pages>448</pages>
+    </book>
+    <journal>
+      <title>American Motorcyclist</title>
+      <issue>58</issue>
+      <month>12</month>
+      <year>2010</year>
+    </journal>
+    <dvd>
+      <title>The Mummy</title>
+      <director>Stephen Sommers</director>
+      <year>1999</year>
+      <length>125</length>
+    </dvd>
+    <cd>
+      <title>Masterplan</title>
+      <artist>Oasis</artist>
+      <year>1998</year>
+      <length>68</length>
+    </cd>
+    <book>
+      <title>Lila</title>
+      <author>Robert M. Pirsig</author>
+      <year>1992</year>
+      <pages>480</pages>
+    </book>
+    <journal>
+      <title>Linux Format</title>
+      <issue>200</issue>
+      <month>11</month>
+      <year>2010</year>
+    </journal>
+    <dvd>
+      <title>Coraline</title>
+      <director>Henry Selick</director>
+      <year>2009</year>
+      <length>96</length>
+    </dvd>
+    <cd>
+      <title>Alright, Still</title>
+      <artist>Lily Allen</artist>
+      <year>2007</year>
+      <length>46</length>
+    </cd>
+</library>

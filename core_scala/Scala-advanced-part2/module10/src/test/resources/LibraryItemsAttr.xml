@@ -1,0 +1,5 @@
+<library>
+    <item type="book" title="Catcher in the Rye" author="J.D. Salinger" year="1951" pages="224"/>
+    <item type="journal" title="National Geographic" issue="170" month="12" year="2005"/>
+    <item type="dvd" title="This is Spinal Tap" director="Rob Reiner" year="1984" length="82"/>
+</library>
