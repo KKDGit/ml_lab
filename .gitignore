@@ -8,6 +8,10 @@ metastore_db
 spark-scala/aas/factors/
 spark-scala/aas/stocks/
 spark-scala/aas/stocksSample/
+spark-scala/sparkSD/ml-100k/
+spark-scala/sparkSD/sparkScala/.idea/
+spark-scala/sparkSD/sparkScala/project/*
+spark-scala/sparkSD/sparkScala/target/*
 
 *.sqlite3
 .idea
