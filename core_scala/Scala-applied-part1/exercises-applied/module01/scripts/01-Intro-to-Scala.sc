@@ -4,7 +4,8 @@ val x = 1 + 2
 
 x * 2
 
-//x = x * 2   // will not compile, try it
+//x = x * 2  // reassignment to val
+// will not compile, try it
 
 var y = 2
 
