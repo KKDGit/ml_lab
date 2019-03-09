@@ -25,14 +25,16 @@ object RatingsCounter {
     val ratings = lines.map(x => x.toString().split("\t")(2))
     
     // Count up how many times each value (rating) occurs
-    //val results = ratings.countByValue()
+    val results = ratings.countByValue()
     
     // Sort the resulting map of (rating, count) tuples
-    //val sortedResults = results.toSeq.sortBy(_._1)
+    val sortedResults = results.toSeq.sortBy(_._1)
     
     // Print each result on its own line.
-    //sortedResults.foreach(println)
+    sortedResults.foreach(println)
 
-    ratings.saveAsTextFile(args(2))
+    //ratings.saveAsTextFile(args(2))
+    sc.stop()
+
   }
 }
