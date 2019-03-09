@@ -33,8 +33,8 @@ object RunIntro extends Serializable {
       .getOrCreate
     import spark.implicits._
  
-    //val preview = spark.read.csv("hdfs:///user/ds/linkage")
-    val preview = spark.read.csv("D:\\Learn\\dataSets\\linkage")
+    val preview = spark.read.csv("hdfs:///user/kranthidr/dataSets/ore_aas/ch02_linkage/linkage")
+   // val preview = spark.read.csv("D:\\Learn\\dataSets\\linkage")
 
     preview.show()
     preview.printSchema()
@@ -43,7 +43,7 @@ object RunIntro extends Serializable {
       .option("header", "true")
       .option("nullValue", "?")
       .option("inferSchema", "true")
-      .csv("D:\\Learn\\dataSets\\linkage")
+      .csv("hdfs:///user/kranthidr/dataSets/ore_aas/ch02_linkage/linkage")
     parsed.show()
     parsed.printSchema()
 
