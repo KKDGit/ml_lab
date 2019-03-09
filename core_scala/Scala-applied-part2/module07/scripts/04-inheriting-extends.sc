@@ -7,3 +7,5 @@ abstract class Fruit extends Food
 class Orange(val name: String) extends Fruit
 
 val jaffa = new Orange("Jaffa")
+
+jaffa.name

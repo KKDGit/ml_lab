@@ -36,7 +36,12 @@ val m1 = mutable.Map('a' -> 1, 'b' -> 2, 'c' -> 3)
 
 var m2 = immutable.Map('d' -> 4, 'e' -> 5, 'f' -> 6)
 
-m1 ++= m2
+println(s"m1 ++= m2 == ${m1 ++= m2}")
+println(s"m1 == $m1")
 m2 += 'g' -> 7
-m2
+println(s"m2 == $m2")
+
+new Array[Int](3)
+new Array[String](3)
+
 

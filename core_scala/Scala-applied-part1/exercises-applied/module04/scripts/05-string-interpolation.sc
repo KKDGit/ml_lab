@@ -8,12 +8,25 @@ s"$name $x $y"
 
 s"$name is ${x * y}"
 
-f"$name is ${x * y}%08.4f"
+f"$name is ${x * y}%09.4f"
 
 //s"$names"
 s"${name}s"
 
-"\t\n"
-raw"\t\n"
+"\thi\nho"
+raw"\thi\nho"
 
-"""\t\n"""
+"""\thi\nho"""
+
+val a1 = """ kranthi "kumar"
+  |dosapati
+""".stripMargin
+
+val a2 = s""" kranthi "kumar" $name
+           |dosapati
+         """.stripMargin
+
+val a3 = s""" kranthi "kumar" $name dosapati """
+
+a1
+a2

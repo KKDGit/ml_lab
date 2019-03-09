@@ -23,11 +23,11 @@ arr.update(0, "scrappy")
 
 arr(1) = "dappy"
 
-println(arr.deep)
+println(s"array.deep = ${arr.deep}")
 
-println(arr)
+println(s"arr = $arr")
 
-arr.toString
+println(s"arr.toString = ${arr.toString}")
 
 val arr2 = Array.apply(1,2,3)
 
@@ -38,4 +38,8 @@ val xs = List(1,2,3)
 xs(1)  // works
 // xs(1) = 10 // does not compile
 
+//println(s"list.deep = ${xs.deep}") //there is no deep here
 
+println(s"list = $xs")
+
+println(s"list.toString = ${xs.toString}")

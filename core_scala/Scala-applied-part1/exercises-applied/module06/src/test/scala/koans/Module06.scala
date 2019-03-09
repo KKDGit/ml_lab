@@ -17,8 +17,8 @@ class Module06 extends KoanSuite with Matchers with SeveredStackTraces {
     // odd numbers (for the first functions) and even numbers (for the second function) so that the
     // tests pass
 
-    def containsOdd(nums: List[Int]): Boolean = true
-    def containsEven(nums: List[Int]): Boolean = true
+    def containsOdd(nums: List[Int]): Boolean = nums.exists(n => n % 2 != 0)
+    def containsEven(nums: List[Int]): Boolean = nums.exists(n => n % 2 == 0)
 
     containsOdd(List(2,4,6)) should be (false)
     containsEven(List(1,3,5)) should be (false)
@@ -38,29 +38,44 @@ class Module06 extends KoanSuite with Matchers with SeveredStackTraces {
     // For now, you can assume that the function passed in takes a String and returns another String.
     // Hint - to make the tests pass, you might need to clean up the string that is read in from the file,
     // try .trim()
+    def withFileContents(fileName: String)(fn: String => String): String = {
+      val file = new BufferedReader(new FileReader(fileName))
+      try {
+        val line = file.readLine.trim
+        //println(line)
+        fn(line)
+      }
+      finally {
+        file.close()
+      }
+    }
 
-    /* val palindrome = withFileContents("quote.txt") { str => str.reverse }
+    val palindrome = withFileContents("quote.txt") { str => str.reverse }
+
     palindrome should be ("Madam, I'm Adam")
 
     val total = withFileContents("sum.txt") { str =>
       str.split(",").map(_.toInt).reduceLeft(_ + _).toString   // make sure to understand what this is doing
     }
-    total should be ("20") */
-  }
 
+    total should be ("20")
+  }
   test ("onlyIfTrue - your own predicate guard") {
     // This is a bit of a contrived exercise, but make a function onlyIfTrue that takes a predicate (by-name
     // function that returns a Boolean), and an operation to carry out if and only if the predicate
     // is true, otherwise do nothing. For now, assume that the operation takes no arguments and has no
     // return (Unit).
 
+    def onlyIfTrue(cond: => Boolean)(fn: => Unit) {
+      if (cond) fn
+    }
 
-    /* val numList = List (-1, 0, -2, 3, -4, 5)
+    val numList = List (-1, 0, -2, 3, -4, 5)
     var numberBelowZero = 0
 
     numList.foreach { n => onlyIfTrue(n < 0) {numberBelowZero += 1 } }
 
-    numberBelowZero should be (3) */
+    numberBelowZero should be (3)
   }
 
   // extra credit - the above exercise is only present to get you used to by-name and curried functions
@@ -68,4 +83,13 @@ class Module06 extends KoanSuite with Matchers with SeveredStackTraces {
   // way. Write a test to find the number of negative numbers in the list using a filter, and no vars.
   // Why is this a better solution? Where might you want to do as above anyway?
 
+  test ("Count negatives in list") {
+    val numList = List(-1, 0, -2, 3, -4, 5)
+    val count = numList.filter(n => n < 0).length
+
+    val count1 = numList.count(n => n < 0)
+    
+    count should be (3)
+    count1 should be (3)
+  }
 }

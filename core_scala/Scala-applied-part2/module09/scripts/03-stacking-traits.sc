@@ -47,3 +47,8 @@ class ClassicCar(val color: String, val vintage: Int) extends Car with Classic
 val ccc = new ClassicCar("red", 1965) with PoweredConvertible with HardtopConvertible
 
 ccc.describe
+
+class ClassicConvertible4(val color: String, val vintage: Int)
+  extends Car with HardtopConvertible with PoweredConvertible with Convertible with Classic
+
+new ClassicConvertible4("red", 1965)

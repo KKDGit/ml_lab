@@ -14,8 +14,15 @@ class Demo {
 }
 
 val demo = new Demo
-demo.a
+
+val demo1 = new Demo //all vals are evaluated but not defs and lazy vals
+
+demo.a //
+
+demo.b //always evaluated since it is def
+
 demo.b
-demo.b
-demo.c
+
+demo.c //first time call lazy val will be evaluated
+
 demo.c

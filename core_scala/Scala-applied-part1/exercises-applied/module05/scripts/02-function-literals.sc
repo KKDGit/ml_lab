@@ -6,6 +6,7 @@ multiplyMethod(2, 3)
 
 multiplyFunction(2, 3)
 
+1 to 10
 
 val nums = (1 to 5).toList
 

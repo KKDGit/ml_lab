@@ -12,7 +12,7 @@ def fileContainsQuestion(file: File): Boolean = {
 }
 
 // change this to the location of your project files
-val projectDir = "/home/dwall/dev/Scala/Training/scala-advanced-training/exercises-applied"
+val projectDir = "D:\\Learn\\PythonProjects\\ml_lab\\core_scala\\Scala-applied-part1\\exercises-applied"
 
 val fileLoc = new File(projectDir)
 

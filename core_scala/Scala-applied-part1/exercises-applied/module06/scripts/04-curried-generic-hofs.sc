@@ -12,7 +12,8 @@ def withFileContents[A](file: File, default: A)(fn: String => A): A = {
 }
 
 // change this to the location of your project files
-val projectDir = "/home/dwall/dev/Scala/Training/scala-advanced-training/exercises-applied"
+"D:\\Learn\\ScalaCode\\Scala-applied-part1\\exercises-applied\\"
+val projectDir = "D:\\Learn\\ScalaCode\\Scala-applied-part1\\exercises-applied\\"
 
 val fileLoc = new File(projectDir)
 val hamlet = new File(fileLoc, "hamlet.shkspr")

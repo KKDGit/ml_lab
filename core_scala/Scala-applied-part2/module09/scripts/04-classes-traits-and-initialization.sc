@@ -15,7 +15,7 @@ trait CoordsT {
   val x: Double
   val y: Double
   override def toString: String = s"($x, $y)"
-  lazy val distToOrigin: Double = math.sqrt((x * x) + (y * y))
+  val distToOrigin: Double = math.sqrt((x * x) + (y * y))
 }
 
 case class Coords(x: Double, y: Double) extends CoordsT
@@ -37,3 +37,23 @@ val c4 = new {
 } with CoordsT
 
 c4.distToOrigin
+
+trait CoordsZ {
+  val x: Double
+  val y: Double
+  override def toString: String = s"($x, $y)"
+  lazy val distToOrigin: Double = math.sqrt((x * x) + (y * y))
+}
+
+case class Coordszc(x: Double, y: Double) extends CoordsZ
+
+val c5 = Coordszc(3.0, 4.0)
+c5.distToOrigin
+
+
+val c6 = new CoordsZ {
+  val x: Double = 3.0
+  val y: Double = 4.0
+}
+
+c6.distToOrigin
