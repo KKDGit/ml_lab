@@ -76,11 +76,16 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
       // replace this with the correct implementation
       (l1 ::: l2).toArray // ++ or :::
     }
+    def concatListsToArray1(l1 : List[Int], l2 : List[Int]) : Array[Int] = {
+      // replace this with the correct implementation
+      (l1 ++ l2).toArray // ++ or :::
+    }
 
     val oneTwo = List(1,2)
     val threeFour = List(3,4)
 
     concatListsToArray(oneTwo, threeFour) should equal (Array(1,2,3,4))
+    concatListsToArray1(oneTwo, threeFour) should equal (Array(1,2,3,4))
   }
 
   test ("Take two arrays, and concatenate them in a list") {
@@ -108,7 +113,8 @@ class Module02 extends KoanSuite with Matchers with SeveredStackTraces {
     t.productArity should be (5)
 
     // and you can iterate over the arguments too
-    t.productIterator.next should be (0)
+    t.productIterator.next() should be (0)
+    t.productIterator.mkString(" ") should be ("0 u 8 1 too")
   }
 
   test ("Map a tuple to strings") {

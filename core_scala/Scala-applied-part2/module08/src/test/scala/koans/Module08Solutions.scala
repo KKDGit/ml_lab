@@ -136,6 +136,7 @@ class Module08Solutions extends KoanSuite with Matchers with SeveredStackTraces 
 
   koan("make a list from any product") {
     val tup = (1, '2', "three")
+
     listProduct(tup) should be (List(1, '2', "three"))
 
     case class Person(first: String, last: String, age: Int, gender: Char)

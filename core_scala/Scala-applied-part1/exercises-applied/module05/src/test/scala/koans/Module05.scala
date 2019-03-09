@@ -4,10 +4,14 @@
 package koans
 import java.net.MalformedURLException
 import java.net.URL
+
 import org.scalatest.Matchers
 import org.scalatest.SeveredStackTraces
 import support.BlankValues._
 import support.KoanSuite
+
+import scala.annotation.tailrec
+import scala.collection.immutable.Nil
 
 class Module05 extends KoanSuite with Matchers with SeveredStackTraces {
 
@@ -19,7 +23,8 @@ class Module05 extends KoanSuite with Matchers with SeveredStackTraces {
     // need to pass them in. The function should multiply the argument passed in by the multiplier var
 
     // UNCOMMENT TESTS
-    /*
+    val mult: Int => Int = a => multiplier*a
+
     mult(5) should be (15)
     mult(3) should be (9)
 
@@ -27,7 +32,6 @@ class Module05 extends KoanSuite with Matchers with SeveredStackTraces {
     multiplier = 5
     mult(5) should be (25)
     mult(3) should be (15)
-    */
   }
 
   test ("Filter numbers") {
@@ -37,8 +41,8 @@ class Module05 extends KoanSuite with Matchers with SeveredStackTraces {
     // to make the tests pass.
     // Just like in Java, % is the modulo operator
 
-    val onlyOdd = allNumbers.filter(x => false)
-    val onlyEven = allNumbers.filter(x => false)
+    val onlyOdd = allNumbers.filter(x => x % 2 != 0)
+    val onlyEven = allNumbers.filter(x => x % 2 == 0)
 
     onlyOdd should be (List(1,3,5,7))
     onlyEven should be (List(0,2,4,6))
@@ -47,11 +51,12 @@ class Module05 extends KoanSuite with Matchers with SeveredStackTraces {
   test ("Function with placeholder syntax") {
     // using placeholder syntax, define a val "mult" that multiplies 2 Ints together, then uncomment
     // the tests below and make sure they pass
-
-    /*
+    val mult = (_:Int) * (_:Int)
+    val mult1: (Int, Int) => Int = _ * _
     mult(2, 4) should be (8)
     mult(10, 10) should be (100)
-    */
+    mult1(2, 4) should be (8)
+    mult1(10, 10) should be (100)
   }
 
   test ("Bounds limiter partial function") {
@@ -69,29 +74,40 @@ class Module05 extends KoanSuite with Matchers with SeveredStackTraces {
     boundToLimits(10, 5, 90) should be (10)
     boundToLimits(10, 50, 90) should be (50)
     boundToLimits(10, 100, 90) should be (90)
+    boundToLimits(100, 110, 10) should be (100)
 
     // now create a partially applied function from the above called waterAsLiquid with lower bounds of 0
     // and upper bounds of 100, but with the middle value (to test) not yet bound (use a placeholder)
     // Then uncomment the tests below and make sure they pass
 
-    /*
+    val waterAsLiquid = boundToLimits(0, (_:Int) , 100)
+
     waterAsLiquid(34) should be (34)
     waterAsLiquid(-10) should be (0)
     waterAsLiquid(400) should be (100)
-    */
   }
 
   test ("Multiply variable number of arguments") {
     // create a multipleDoubles method to satisfy the tests below, uncomment the tests and run them
     // to ensure it works
-
-    /*
-    multiplyDoubles(1.0, 2.0, 3.0) should be (6.0 +- 0.00001)
-    multiplyDoubles(1.1, 2.2, 3.3, 4.4, 5.5, 6.6) should be (1275.52392 +- 0.00001)
-    multiplyDoubles() should be (1.0)
-    */
-
+    def multiplyDoubles(d: Double*):Double = {
+      var res = 1.0
+      for(ele <- d) yield res = res * ele
+      res
+    }
+        multiplyDoubles(1.0, 2.0, 3.0) should be (6.0 +- 0.00001)
+        multiplyDoubles(1.1, 2.2, 3.3, 4.4, 5.5, 6.6) should be (1275.52392 +- 0.00001)
+        multiplyDoubles() should be (1.0)
     // extra credit, can you re-write the multiplyDoubles method to work without needing to use any vars?
+
+    def multiplyDoubles1(d: Double*):Double = {
+       if (d.isEmpty) 1.0
+       else d.head * multiplyDoubles1(d.tail: _*)
+    }
+    multiplyDoubles1(1.0, 2.0, 3.0) should be (6.0 +- 0.00001)
+    multiplyDoubles1(1.1, 2.2, 3.3, 4.4, 5.5, 6.6) should be (1275.52392 +- 0.00001)
+    multiplyDoubles1() should be (1.0)
+
   }
 
   test ("Recurse with varargs") {
@@ -102,19 +118,22 @@ class Module05 extends KoanSuite with Matchers with SeveredStackTraces {
     // listOfLists("3","2","1") should give back: List(List("3","2","1"), List("2","1"), List("1"))
     // If you have trouble with the recursive call, check the argument expansion slide for help
     // Uncomment the tests below to make sure the method works.
-    
 
-    /*
+    def listOfLists(l: String*): List[List[String]] = {
+        if (l.isEmpty) Nil
+        else l.toList::listOfLists(l.tail: _*)
+    }
     listOfLists("Hello", "World") should be (List(List("Hello", "World"), List("World")))
     listOfLists("Hello", "There", "World") should be (List(List("Hello", "There", "World"), List("There", "World"), List("World")))
-    */
-
     // is this implementation of listOfLists properly recursive? If not, why not?
   }
 
   test ("URL cleaner") {
     def urlClean(urlAsString : String) : URL = {
-      new URL(urlAsString)
+      try new URL(urlAsString)
+      catch {
+        case ex: MalformedURLException => new URL("http://badurl.com")
+      }
     }
 
     // fix the method above to catch a malformed URL and replace it with a URL made out of
@@ -134,8 +153,12 @@ class Module05 extends KoanSuite with Matchers with SeveredStackTraces {
     // anything else should return the same value with "Not " in front of it - e.g. A Lot should return Not A Lot
     // Use pattern matching
 
-    def oppositeOf(item: String) = item
-
+    def oppositeOf(item: String) = item match {
+      case "North" => "South"
+      case "Hot" => "Cold"
+      case "Cool" => "Square"
+      case v => s"Not $v"
+    }
     oppositeOf("North") should be ("South")
     oppositeOf("Hot") should be ("Cold")
     oppositeOf("Cool") should be ("Square")

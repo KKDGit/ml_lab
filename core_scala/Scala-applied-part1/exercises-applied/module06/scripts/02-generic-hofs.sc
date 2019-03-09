@@ -43,4 +43,7 @@ val s2 = s1.toLowerCase.filterNot(_ == ' ').toSeq
 val s3 = s2.groupBy(identity)
 s3.maxBy { case (char, seq) => seq.length }
 
+val s4 = s2.groupBy(x => x)
+s4.maxBy { case (char, seq) => seq.length }
+
 

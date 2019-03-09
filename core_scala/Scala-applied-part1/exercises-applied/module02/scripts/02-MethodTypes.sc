@@ -27,3 +27,9 @@ def add1(a: Int, b:Int){
 }
 
 add1(3,6)
+
+def add2(a: Int, b:Int) {
+  println(s"printed - ${a+b}")
+}
+
+add2(3,2)

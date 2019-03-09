@@ -18,8 +18,9 @@ un == ()
 class WriterOutput(writer: PrintWriter) {
   def write(s: String): Unit = writer.println(s)
 }
+var pathname1 = "D:\\Learn\\PythonProjects\\ml_lab\\core_scala\\Scala-applied-part1\\exercises-applied\\module04\\ex1.txt"
 
-val ex1 = new PrintWriter(new File("ex1.txt"))
+val ex1 = new PrintWriter(new File(pathname1))
 
 val out1 = new WriterOutput(ex1)
 
@@ -36,8 +37,10 @@ class WriterOutput2(writer: PrintWriter) {
     this
   }
 }
+pathname1 = "D:\\Learn\\PythonProjects\\ml_lab\\core_scala\\Scala-applied-part1\\exercises-applied\\module04\\ex2.txt"
 
-val ex2 = new PrintWriter(new File("ex2.txt"))
+
+val ex2 = new PrintWriter(new File(pathname1))
 
 val out2 = new WriterOutput2(ex2)
 

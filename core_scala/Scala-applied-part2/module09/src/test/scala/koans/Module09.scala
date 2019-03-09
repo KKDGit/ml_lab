@@ -56,19 +56,19 @@ class Module09 extends KoanSuite with Matchers with SeveredStackTraces {
     val se2 = new StatefulEntity
 
     se1.id should equal (se1.id)
-    se1.id should not equal (se2.id)
+    se1.id should not equal se2.id
 
-    StatefulEntity.findById(se1.id) should be (__)
-    StatefulEntity.findById(se2.id) should be (__)
+    StatefulEntity.findById(se1.id) should be (None)
+    StatefulEntity.findById(se2.id) should be (None)
 
     se1.save() should be (true)
     se2.save() should be (true)
 
-    StatefulEntity.findById(se1.id) should be (__)
-    StatefulEntity.findById(se2.id) should be (__)
+    StatefulEntity.findById(se1.id) should be (Some(se1))
+    StatefulEntity.findById(se2.id) should be (Some(se2))
 
-    se1.cancel() should be (__)
-    se2.cancel() should be (__)
+    se1.cancel() should be (true)
+    se2.cancel() should be (true)
   }
 
   // Add a trait called CreatedUpdated which extends StatefulEntity but adds two new Option[LocalDateTime]
@@ -85,9 +85,25 @@ class Module09 extends KoanSuite with Matchers with SeveredStackTraces {
   // To get the current datetime as a LocalDateTime, just use LocalDateTime.now()
   //
   // Uncomment the tests below to make sure they work
+trait CreatedUpdated extends StatefulEntity {
+    private var createdDate: Option[LocalDateTime] = None
+    private var updatedDate: Option[LocalDateTime] = None
 
+    override def save() = {
+      val saved = super.save()
+      if (saved) {
+        val newDate = LocalDateTime.now()
+        if (createdDate == None) createdDate = Some(newDate)
+        updatedDate = Some(newDate)
+      }
+      saved
+    }
 
-  /* test ("StatefulEntity with CreatedUpdated contract") {
+    def whenCreated: Option[LocalDateTime] = createdDate
+    def lastUpdated: Option[LocalDateTime] = updatedDate
+  }
+
+   test ("StatefulEntity with CreatedUpdated contract") {
     val se = new StatefulEntity with CreatedUpdated
 
     se.whenCreated should be (None)
@@ -115,16 +131,25 @@ class Module09 extends KoanSuite with Matchers with SeveredStackTraces {
     se.cancel()
     se.whenCreated should be (created)
     se.lastUpdated should be (updated)
-  } */
+  }
 
   // Add another trait, this time it should be called CreateOnly, and should override the save operation
   // to only save if the object has never been saved before - if the object has already been saved it
   // should not save the object, and should return false instead of true.
   //
   // Uncomment the tests to make sure it works
+  trait CreateOnly extends StatefulEntity {
+    var alreadySaved = false
 
+    override def save() = {
+      if (alreadySaved) false else {
+        alreadySaved = true
+        super.save()
+      }
+    }
+  }
 
-  /* test ("StatefulEntity with CreatedUpdated with CreateOnly") {
+   test ("StatefulEntity with CreatedUpdated with CreateOnly") {
     val se = new StatefulEntity with CreatedUpdated with CreateOnly
 
     se.whenCreated should be (None)
@@ -142,14 +167,16 @@ class Module09 extends KoanSuite with Matchers with SeveredStackTraces {
 
     se.whenCreated should be (created)
     se.lastUpdated should be (created)
-  } */
-
+  }
   // Finally, let's create a new class for convenience, called StatefulEntityWithDateCreateOnly that
   // is based on the StatefulEntity and adds the two traits, so that they don't need to be composed
   // each time - the following tests should pass.
 
+  class StatefulEntityWithDateCreateOnly extends StatefulEntity with CreateOnly with CreatedUpdated
 
-  /* test ("StatefulEntityWithDateCreateOnly test") {
+  class StatefulEntityWithDateCreateOnly1 extends StatefulEntity with CreatedUpdated with CreateOnly
+
+   test ("StatefulEntityWithDateCreateOnly test") {
     val se = new StatefulEntityWithDateCreateOnly
 
     se.whenCreated should be (None)
@@ -167,12 +194,33 @@ class Module09 extends KoanSuite with Matchers with SeveredStackTraces {
 
     se.whenCreated should be (created)
     se.lastUpdated should be (created)
-  } */
+  }
 
+  test ("StatefulEntityWithDateCreateOnly1 test") {
+    val se = new StatefulEntityWithDateCreateOnly1
+
+    se.whenCreated should be (None)
+    se.lastUpdated should be (None)
+
+    se.save() should be (true)
+
+    se.whenCreated should not be (None)
+    se.lastUpdated should be (se.whenCreated)
+    val created = se.whenCreated
+
+    Thread.sleep(1001)
+
+    se.save() should be (false)
+
+    se.whenCreated should be (created)
+    se.lastUpdated should be (created)
+  }
   // Extra credit - if you alter the order in which the traits are applied in the above
   // StatefulEntityWithDateCreateOnly so that CreateOnly is first and CreatedUpdated second in the
   // class definition, the above unit test fails. Try it. Can you work out where it fails and why?
   // If you have time, fix the logic of the traits so the unit tests pass no matter what order the
   // traits are applied in.
+
+  // IT SEEMS WORKING EVEN IF WE CHANGE THE ORDER ?????
 
 }

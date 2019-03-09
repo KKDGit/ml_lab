@@ -46,3 +46,18 @@ object FactSeqScoped {
 }
 
 FactSeqScoped.factSeq(8)
+
+object FactSeqDefaultParams {
+
+  def factSeq(n: Int): List[Long] = {
+    @tailrec
+    def factSeqInner(acc: List[Long] = List(1L), ct: Int = 2): List[Long] = {
+      if (ct > n) acc else
+        factSeqInner(ct * acc.head :: acc, ct + 1)
+    }
+
+    factSeqInner()
+  }
+}
+
+FactSeqDefaultParams.factSeq(8)

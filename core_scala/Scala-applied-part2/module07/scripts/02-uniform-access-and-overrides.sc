@@ -11,3 +11,5 @@ abstract class Car(
 val mustang = new Car("Ford", "Mustang", 1965) {
   def isVintage = LocalDate.now.getYear - year > 20
 }
+
+mustang.year
