@@ -28,13 +28,13 @@ case class MatchData(
 object RunIntro extends Serializable {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder
-        .master("yarn")
+        .master("local")
       .appName("Intro")
       .getOrCreate
     import spark.implicits._
  
-    val preview = spark.read.csv("hdfs:///user/kranthidr/dataSets/ore_aas/ch02_linkage/linkage")
-   // val preview = spark.read.csv("D:\\Learn\\dataSets\\linkage")
+    //val preview = spark.read.csv("hdfs:///user/kranthidr/dataSets/ore_aas/ch02_linkage/linkage")
+   val preview = spark.read.csv("D:\\Learn\\dataSets\\linkage")
 
     preview.show()
     preview.printSchema()
@@ -43,7 +43,8 @@ object RunIntro extends Serializable {
       .option("header", "true")
       .option("nullValue", "?")
       .option("inferSchema", "true")
-      .csv("hdfs:///user/kranthidr/dataSets/ore_aas/ch02_linkage/linkage")
+      .csv("D:\\Learn\\dataSets\\linkage")
+      //.csv("hdfs:///user/kranthidr/dataSets/ore_aas/ch02_linkage/linkage")
     parsed.show()
     parsed.printSchema()
 
