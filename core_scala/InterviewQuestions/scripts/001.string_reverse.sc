@@ -13,6 +13,7 @@ def reverse2(s: String): String = {
 }
 
 // recursively
+//@tailrec //throws errors as recursive call is NOT in tail position
 def reverse3(s: String): String = {
   val len = s.length
   if (len == 1) {
@@ -22,7 +23,9 @@ def reverse3(s: String): String = {
   }
 }
 
+
 // recursively, with tail recursion
+//@tailrec //throws errors as recursive call is NOT in tail position
 def reverse4(s: String): String = {
   val len = s.length
   if (len == 1) {
@@ -31,3 +34,10 @@ def reverse4(s: String): String = {
     s.substring(len-1, len) + reverse4(s.substring(0, len-1))
   }
 }
+
+println("------------------------------------------------")
+
+reverse1(reverse1("Kranthi Kumar"))
+reverse2(reverse2("Hi THERE"))
+reverse3(reverse3("WHat is this"))
+reverse4(reverse4("Hi How are You"))
