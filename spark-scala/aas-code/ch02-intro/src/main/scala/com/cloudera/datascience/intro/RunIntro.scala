@@ -38,7 +38,8 @@ object RunIntro extends Serializable {
       .appName("Intro")
       .getOrCreate
     import spark.implicits._
- 
+
+    println(s"Spark Version :- ${spark.version}")
     //val preview = spark.read.csv("hdfs:///user/kranthidr/dataSets/ore_aas/ch02_linkage/linkage")
    val preview = spark.read.csv("D:\\Learn\\dataSets\\linkage")
 
