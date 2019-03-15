@@ -6,6 +6,7 @@
 
 package com.cloudera.datascience.intro
 
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 //import org.apache.spark.sql.{SparkSession, DataFrame}
 import org.apache.spark.sql.functions._ // for lit(), first(), etc.
@@ -27,6 +28,11 @@ case class MatchData(
 
 object RunIntro extends Serializable {
   def main(args: Array[String]): Unit = {
+
+    System.setProperty("hadoop.home.dir", "C:\\Spark\\spark-hadoop\\hadoop")
+    // Set the log level to only print errors
+    Logger.getLogger("org").setLevel(Level.ERROR)
+
     val spark = SparkSession.builder
         .master("local")
       .appName("Intro")
