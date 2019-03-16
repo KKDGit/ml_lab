@@ -21,6 +21,8 @@ class FakeDBAccess extends DBAccess {
     }.toOption
   }
 }
+//asInstanceOf[T] is needed ...it will not compile..
+// expected Option[T] but Option[Any] is present
 
 case class Person(name: String, age: Int)
 
