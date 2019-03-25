@@ -47,7 +47,7 @@ class Module13 extends FunSuite with Matchers with StopOnFirstFailure with Sever
   // can you find an easy way to convert a String to a list of Chars?
   // if you need help converting a String to a list -
   // have a look at the completion options in the REPL for strings
-  def stringToChars(s1: String): List[Char] = Nil
+  def stringToChars(s1: String): List[Char] = s1.toList
 
   test("Convert a string to a list of chars") {
     stringToChars(seq1) should be (List('G','T','A','A','G','C','T','T','A','C'))
@@ -56,7 +56,7 @@ class Module13 extends FunSuite with Matchers with StopOnFirstFailure with Sever
   // Next take this list of chars and convert it to a list of set of chars
   // with a single char in each, Set.apply or Set(ch) will put a char
   // into a set
-  def stringToSetOfChars(s1: String): List[Set[Char]] = Nil
+  def stringToSetOfChars(s1: String): List[Set[Char]] = s1.toList.map(Set(_))
 
   test("Convert a string to a list of set of chars (each set with one char in it)") {
     stringToSetOfChars(seq1).toString should be ("List(Set(G), Set(T), Set(A), Set(A), Set(G), Set(C), Set(T), Set(T), Set(A), Set(C))")
@@ -69,7 +69,10 @@ class Module13 extends FunSuite with Matchers with StopOnFirstFailure with Sever
   // - convert the string to a list of chars
   // - zip the chars with the list of sets representing the current possibilities at that position
   // - iterate over the resulting tuples and add the allele to the current set
-  def combineZippedSetsAndString(s1: List[Set[Char]], seq: String): List[Set[Char]] = Nil
+  def combineZippedSetsAndString(s1: List[Set[Char]], seq: String): List[Set[Char]] = {
+    for((set, char) <- s1 zip seq.toList)
+      yield set + char
+  }
 
   test("Combine list of sets with list of new chars") {
     val startSet = stringToSetOfChars(seq1)
@@ -85,7 +88,11 @@ class Module13 extends FunSuite with Matchers with StopOnFirstFailure with Sever
   //
   // sequences.head will give you the first item of the sequences list, and sequences.tail will give
   // you the rest to iterate over.
-  def comboSetsForSequences(sequences: List[String]): List[Set[Char]] = Nil
+  def comboSetsForSequences(sequences: List[String]): List[Set[Char]] = {
+    val head :: rest = sequences
+    val startingSet = stringToSetOfChars(head)
+    rest.foldLeft(startingSet){(a, b) => combineZippedSetsAndString(a, b)}
+  }
 
   test("Find all combinations from sequences") {
     val allCombos = comboSetsForSequences(listOfSeqs)
@@ -100,7 +107,11 @@ class Module13 extends FunSuite with Matchers with StopOnFirstFailure with Sever
   // of Ints, and partitions the rest of the list into two new lists, one with values lower than the first number,
   // and one with the rest. It should return three values, the first number, the list lower, and the remaining list
   // to satisfy the test below
-  def partitionByFirst(numbers: List[Int]): (Int, List[Int], List[Int]) = (0, Nil, Nil)
+  def partitionByFirst(numbers: List[Int]): (Int, List[Int], List[Int]) = {
+    val head::rest = numbers
+    val parts = rest.partition(_< head)
+    (head, parts._1 , parts._2)
+  }
 
   test("Partition by first") {
     val (head, lower, remaining) = partitionByFirst(numbers)
@@ -116,7 +127,13 @@ class Module13 extends FunSuite with Matchers with StopOnFirstFailure with Sever
   // return the result of mysteryFunction(lower) ::: List(head) ::: mysteryFunction(remaining)
   // What have you just created? Check that it works in the test below
 
-  def mysteryFunction(numbers: List[Int]): List[Int] = Nil
+  def mysteryFunction(numbers: List[Int]): List[Int] = numbers match {
+    case Nil => Nil
+    case l : List[Int] => {
+      val (head, lower, remaining) = partitionByFirst(l)
+      mysteryFunction(lower) ::: List(head) ::: mysteryFunction(remaining)
+    }
+  }
 
   test("Can you tell what it is yet") {
     val newList = mysteryFunction(numbers)

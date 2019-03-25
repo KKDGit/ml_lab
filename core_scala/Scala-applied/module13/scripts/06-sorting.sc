@@ -1,6 +1,8 @@
 case class Person(name: String, age: Int)
 
-val xs = List(Person("Harry", 25), Person("Sally", 23), Person("Fred", 31))
+val xs = List(Person("Harry", 25),
+  Person("Sally", 23),
+  Person("Fred", 31))
 
 xs.sortWith((p1, p2) => p1.age < p2.age)
 xs.sortBy(_.name)
