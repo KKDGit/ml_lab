@@ -29,7 +29,7 @@ class TestingSuiteDemo extends FunSuite with Matchers with ScalaFutures {
     val piBy4 = Await.result(resultF, 1.minute)
 
     println(piBy4*4)
-    piBy4*4 should be (10.0 +- 0.001)
+    piBy4*4 should not be (10.0 +- 0.001)
   }
 
   test("PI when ready") {

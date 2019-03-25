@@ -1,4 +1,4 @@
-object LearningScala2 {
+//object LearningScala2 {
   // Flow control
   
   // If / else syntax
@@ -72,4 +72,4 @@ object LearningScala2 {
 	 // So, the result should be 0, 1, 1, 2, 3, 5, 8, 13, 21, 34
 	 
 	   
-}
+//}

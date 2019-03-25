@@ -1,4 +1,5 @@
 val nums = (1 to 10).toList
+List.range(1, 10)
 
 nums.head
 nums.tail

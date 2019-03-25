@@ -1,4 +1,4 @@
-object LearningScala4 {
+//object LearningScala4 {
   // Data structures
   
   // Tuples (Also really common with Spark!!)
@@ -112,4 +112,4 @@ println(archersShip)                              //> Unknown
 // And we didn't even touch on object-oriented Scala. The book "Learning Scala" from O'Reilly is great if you want to
 // go into more depth - but you've got enough to get through this course for now.
 
-}
+//}

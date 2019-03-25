@@ -30,7 +30,7 @@ opposite("fish")
 // case matters for variable vs constant
 
 val MaxLimit = 10  // constants start with upper case
-val minLimit = 1
+val minLimit = 3
 
 def isALimit(x: Int) = x match {
   case MaxLimit => true
@@ -39,4 +39,16 @@ def isALimit(x: Int) = x match {
 }
 
 isALimit(10)
-isALimit(3)
+isALimit(1)
+
+val MaxLimit1 = 10  // constants start with upper case
+val minLimit1 = 3
+
+def isALimit1(x: Int) = x match {
+  case MaxLimit1 => true
+  case minLimit1 => true
+  case _ => false
+}
+
+isALimit1(10)
+isALimit1(1)

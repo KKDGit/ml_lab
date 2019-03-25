@@ -28,7 +28,6 @@ if (s.isInstanceOf[String]) {
 
 
 // but beware type erasure:
-
 def withIntStringMap(x: Any): Int = x match {
   case m: Map[_, _] =>
     m.head._1 match {

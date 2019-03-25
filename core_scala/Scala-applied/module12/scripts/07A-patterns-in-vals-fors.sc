@@ -20,7 +20,7 @@ for {
 //get will throw exception is there is None...
 // before that isDefined check is necessary
 
-or {
+for {
   Person(name, phone, _) <- people
 } yield name -> phone.getOrElse("XXX-XXX-XXXX")
 

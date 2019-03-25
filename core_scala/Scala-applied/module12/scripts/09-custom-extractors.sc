@@ -6,6 +6,7 @@ val p1 = Person("Fred", "Frederickson", 28)
 
 p1 match {
   case Person("Fred", last, 28) => "Fred is 28"
+  case _ => "Something Else"
 }
 
 Person.unapply(p1)
@@ -16,6 +17,7 @@ xs match {
   case head :: tail =>
     println(head)
     println(tail)
+  case _ => println("something else")
 }
 
 List.unapplySeq(xs)

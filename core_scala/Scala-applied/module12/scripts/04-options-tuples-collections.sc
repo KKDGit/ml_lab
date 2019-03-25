@@ -1,4 +1,4 @@
-import scala.collection.Set
+import scala.collection.{Iterable, Set}
 
 def matchOption(o: Option[Int]) =  o match {
   case Some(n) if n > 10 => "It's a number above 10"
@@ -68,3 +68,22 @@ def matchTry(t: Try[_]): String = t match {
 matchTry(Try(4/2))
 matchTry(Try(4/0))
 
+
+def match1(xs: Seq[Int]): String = xs match {
+    case Seq(1, 2, rest) => s"A 1, 2 collection followed by $rest"
+    case Seq(a, b, rest @ _*) => s"A collection of at least 2 items, starting with $a, $b, rest is $rest"
+    case Seq(a) => s"A single element collection of $a"
+    case Seq() => "The empty collection"
+}
+
+match1(List(1,2,3))
+match1(List(1,2))
+match1(List(1,3,4))
+match1(List(4))
+match1(Nil)
+
+match1(Vector(1,2,3))
+match1(Vector(1,2))
+match1(Vector(1,3,4))
+match1(Vector(4))
+match1(Vector.empty)
