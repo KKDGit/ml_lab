@@ -1,5 +1,5 @@
 #use Toree version 0.2.0 jar
-jupyter toree install --kernel_name='Spark' --log-level=50 --spark_home=/usr/hdp/current/spark2-client --user --replace --spark_opts="--master yarn"
+jupyter toree install --kernel_name='spark' --log-level=50 --spark_home=/usr/hdp/current/spark2-client --user --replace --spark_opts="--master yarn"
 
 jupyter toree install --kernel_name='nsc' --log-level=50 --spark_home=/usr/hdp/current/spark2-client --toree_opts='--nosparkcontext' --user --replace
 
