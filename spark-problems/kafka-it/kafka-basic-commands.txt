@@ -1,0 +1,18 @@
+kafka-topics.sh --create \
+   --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+   --replication-factor 1 \
+   --partitions 1 \
+   --topic kkdkafkademo
+
+kafka-topics.sh --list \
+   --zookeeper nn01.itversity.com:2181,nn02.itversity.com:2181,rm01.itversity.com:2181 \
+   --topic kkdkafkademo
+
+kafka-console-producer.sh \
+  --broker-list wn01.itversity.com:6667,wn02.itversity.com:6667,wn03.itversity.com:6667 \
+  --topic kkdkafkademo
+
+kafka-console-consumer.sh \
+  --bootstrap-server wn01.itversity.com:6667,wn02.itversity.com:6667,wn03.itversity.com:6667 \
+  --topic kkdkafkademo \
+  --from-beginning

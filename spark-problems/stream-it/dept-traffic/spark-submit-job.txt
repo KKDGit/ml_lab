@@ -1,0 +1,4 @@
+spark-submit \
+--class StreamingDepartmentCount \
+--conf spark.ui.port=4444 \
+target/scala-2.11/*.jar yarn gw02.itversity.com 12341
