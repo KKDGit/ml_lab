@@ -37,5 +37,11 @@ spark-submit --jars $(echo /home/kranthidr/stream-jars/*.jar | tr ' ' ',') \
 --conf spark.ui.port=4444 \
 target/scala-2.11/*.jar yarn
 
+4.
+spark-submit \
+--class StreamingDepartmentCount \
+--conf spark.ui.port=4444 \
+target/scala-2.11/*assembly*.jar yarn
+
 
 
