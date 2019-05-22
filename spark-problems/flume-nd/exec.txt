@@ -1,0 +1,17 @@
+ExecLoggerAgent.sources= ExecSource
+ExecLoggerAgent.sinks=LoggerSink
+ExecLoggerAgent.channels=MemChannel
+
+
+ExecLoggerAgent.sources.ExecSource.type=exec
+ExecLoggerAgent.sources.ExecSource.command= cat /home/cloudera/employee.txt
+
+ExecLoggerAgent.sinks.LoggerSink.type=logger
+
+ExecLoggerAgent.channels.MemChannel.type=memory
+ExecLoggerAgent.channels.MemChannel.capacity=10000
+ExecLoggerAgent.channels.MemChannel.transactionCapacity=1000
+
+
+ExecLoggerAgent.sources.ExecSource.channels=MemChannel
+ExecLoggerAgent.sinks.LoggerSink.channel=MemChannel

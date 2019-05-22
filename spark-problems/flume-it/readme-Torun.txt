@@ -10,3 +10,5 @@ flume-ng agent --name kkda1 --conf /home/kranthidr/projects/ml_lab/spark-problem
 nc localhost 12341
 ----------------------------------------------------------------------------
 flume-ng agent --name kkda2 --conf /home/kranthidr/projects/ml_lab/spark-problems/flume-it/exec-hdfs-memory --conf-file /home/kranthidr/projects/ml_lab/spark-problems/flume-it/exec-hdfs-memory/example.conf
+
+

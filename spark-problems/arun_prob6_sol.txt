@@ -1,0 +1,119 @@
+1.
+create a hive meta store database named problem6 and import all tables from mysql retail_db database into hive meta store. 
+STEP 1: Create HIVE DATABASE --- 
+create database kkd_problem6 location '/user/kranthidr/arun/kkd_problem6';
+
+STEP 2: Don't use --hive-create-table option
+
+STEP 3:
+
+sqoop import-all-tables \
+--connect 'jdbc:mysql://ms.itversity.com:3306/retail_db' --username retail_user --password itversity \
+--hive-import --hive-database kkd_problem6 \
+--warehouse-dir /user/kranthidr/arun/kkd_problem6 --num-mappers 1
+
+sqoop eval \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db --username retail_user --password itversity \
+--query "show DATABASES"
+
+2.
+On spark shell use data available on meta store as source and perform step 3,4,5 and 6. [this proves your ability to use meta store as a source] 
+
+HIVE
+>>drop database kkd_problm6 cascade;
+>>show databases like 'kkd*';
+>>show databases like 'kranthi*';
+kranthi_db
+kranthidr_db
+kranthidr_retail_db_txt
+3.
+Rank products within department by price and order by department ascending and rank descending [this proves you can produce ranked and sorted data on joined data sets]
+
+USE kkd_problem6;
+
+select department_id, department_name, product_price, rank() over(partition by department_id order by product_price desc) rank from products join categories on product_category_id == category_id join departments on category_department_id = department_id limit 10;
+
+select department_id, department_name, product_price, rank() over(partition by department_id order by product_price desc) rank from products join categories on product_category_id == category_id join departments on category_department_id = department_id order by department_name,rank asc limit 10;
+
+4.
+find top 10 customers with most unique product purchases. if more than one customer has the same number of product purchases then the customer with the lowest customer_id will take precedence [this proves you can produce aggregate statistics on joined datasets]
+
+select customer_id, count(distinct(order_item_product_id)) num_unique_purch from order_items join orders on order_id = order_item_order_id join customers on customer_id = order_customer_id join products on product_id = order_item_product_id group by customer_id order by num_unique_purch desc limit 10;
+
+5.
+On dataset from step 3, apply filter such that only products less than 100 are extracted [this proves you can use subqueries and also filter data]
+
+create view ranked_products as select department_id, department_name, product_id, product_price, rank() over(partition by department_id order by product_price desc) rank from products p join categories on product_category_id = category_id join departments on category_department_id = department_id order by department_name,rank asc;
+
+select * from ranked_products where product_price < 100;
+
+create view productsle100 as select * from products where product_price < 100;
+
+select department_id, department_name, product_id, product_price, rank() over(partition by department_id order by product_price desc) rank from productsle100 join categories on product_category_id == category_id join departments on category_department_id = department_id order by department_name,rank asc;
+ 
+6.
+On dataset from step 4, extract details of products purchased by top 10 customers which are priced at less than 100 USD per unit [this proves you can use subqueries and also filter data]
+
+select customer_id, count(distinct(order_item_product_id)) num_unique_purch from order_items join orders on order_id = order_item_order_id join customers on customer_id = order_customer_id join productsle100 on product_id = order_item_product_id group by customer_id order by num_unique_purch desc limit 10;
+
+7.
+Store the result of 5 and 6 in new meta store tables within hive. [this proves your ability to use metastore as a sink]
+
+create table hive_ranked_products_department_lt100 as select department_id, department_name, product_id, product_price, rank() over(partition by department_id order by product_price desc) rank from productsle100 join categories on product_category_id == category_id join departments on category_department_id = department_id order by department_name,rank asc;
+
+create table hive_top10_customers_uprods_lt100_1 as select customer_id, count(distinct(order_item_product_id)) num_unique_purch from order_items join orders on order_id = order_item_order_id join customers on customer_id = order_customer_id join productsle100 on product_id = order_item_product_id group by customer_id order by num_unique_purch desc;
+
+create table hive_top10_customers_uprods_lt100 as select customer_id, count(distinct(order_item_product_id)) num_unique_purch from order_items join orders on order_id = order_item_order_id join customers on customer_id = order_customer_id join productsle100 on product_id = order_item_product_id group by customer_id order by num_unique_purch desc limit 10;
+
+SPARK
+3.
+Rank products within department by price and order by department ascending and rank descending [this proves you can produce ranked and sorted data on joined data sets]
+
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions._
+
+spark.sql("USE kkd_problem6")
+val prods = spark.sql("select * from products")
+val cats = spark.sql("select * from categories")
+val depts = spark.sql("select * from departments")
+val joined1 = prods.join(cats,'product_category_id === 'category_id).join(depts, 'category_department_id === 'department_id)
+
+val win1 = Window.partitionBy('department_id).orderBy('product_price.desc)
+val ran1 = rank().over(win1).as("rank")
+
+val op1 = joined1.select('department_id,'department_name, 'product_id, 'product_price, ran1).orderBy('department_name,'rank.asc)
+
+op1.show()
+
+4.
+find top 10 customers with most unique product purchases. if more than one customer has the same number of product purchases then the customer with the lowest customer_id will take precedence [this proves you can produce aggregate statistics on joined datasets]
+
+val oi = spark.sql("select * from order_items")
+val ords = spark.sql("select * from orders")
+val custs = spark.sql("select * from customers")
+val prods = spark.sql("select * from products")
+
+val joined2 = oi.join(ords,'order_id === 'order_item_order_id).join(custs, 'customer_id === 'order_customer_id).join(prods, 'product_id === 'order_item_product_id).select('customer_id, concat('customer_fname, lit(" "), 'customer_lname), 'order_item_product_id, 'product_name)
+
+val op2 = joined2.groupBy('customer_id).agg(countDistinct('order_item_product_id).as("num_unique_purch")).orderBy('num_unique_purch.desc).limit(10)
+
+op2.show()
+
+5.
+On dataset from step 3, apply filter such that only products less than 100 are extracted [this proves you can use subqueries and also filter data]
+
+val op3 = joined1.filter("product_price < 100").select('department_id,'department_name, 'product_price, ran1).orderBy('department_name,'rank.asc)
+
+op3.show()
+
+6.
+On dataset from step 4, extract details of products purchased by top 10 customers which are priced at less than 100 USD per unit [this proves you can use subqueries and also filter data]
+
+val op4 = joined2.filter("product_price < 100").groupBy('customer_id).agg(countDistinct('order_item_product_id).as("num_unique_purch")).orderBy('num_unique_purch.desc).limit(10)
+
+op4.show()
+7.
+Store the result of 5 and 6 in new meta store tables within hive. [this proves your ability to use metastore as a sink]
+op3.write.mode("overwrite").saveAsTable("ranked_products_department_lt100")
+
+op4.write.mode("overwrite").saveAsTable("top10_customers_uprods_lt100")

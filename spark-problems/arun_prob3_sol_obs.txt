@@ -1,0 +1,84 @@
+///
+WARN HiveExternalCatalog: Couldn't find corresponding Hive SerDe for data source provider com.databricks.spark.avro. Persisting data source table `kkd_problem3`.`orders_avro1` into Hive metastore in Spark SQL specific format, which is NOT compatible with Hive.
+///
+
+hive (kkd_problem3)> describe formatted orders_avro;
+OK
+# col_name              data_type               comment
+
+order_id                int
+order_date              bigint
+order_customer_id       int
+order_status            string
+
+# Partition Information
+# col_name              data_type               comment
+
+order_month             string
+
+# Detailed Table Information
+Database:               kkd_problem3
+Owner:                  kranthidr
+CreateTime:             Tue May 21 01:48:07 EDT 2019
+LastAccessTime:         UNKNOWN
+Protect Mode:           None
+Retention:              0
+Location:               hdfs://nn01.itversity.com:8020/user/kranthidr/arun/kkd_problem3/orders_avro
+Table Type:             MANAGED_TABLE
+Table Parameters:
+        transient_lastDdlTime   1558417687
+
+# Storage Information
+SerDe Library:          org.apache.hadoop.hive.serde2.avro.AvroSerDe
+InputFormat:            org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat
+OutputFormat:           org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat
+Compressed:             No
+Num Buckets:            -1
+Bucket Columns:         []
+Sort Columns:           []
+Storage Desc Params:
+        serialization.format    1
+Time taken: 0.345 seconds, Fetched: 34 row(s)
+hive (kkd_problem3)> describe formatted orders_avro1;
+OK
+# col_name              data_type               comment
+
+col                     array<string>           from deserializer
+
+# Partition Information
+# col_name              data_type               comment
+
+order_month             string
+
+# Detailed Table Information
+Database:               kkd_problem3
+Owner:                  kranthidr
+CreateTime:             Tue May 21 02:49:19 EDT 2019
+LastAccessTime:         UNKNOWN
+Protect Mode:           None
+Retention:              0
+Location:               hdfs://nn01.itversity.com:8020/user/kranthidr/arun/kkd_problem3/orders_avro1
+Table Type:             MANAGED_TABLE
+Table Parameters:
+        spark.sql.create.version        2.3.0.2.6.5.0-292
+        spark.sql.partitionProvider     catalog
+        spark.sql.sources.provider      com.databricks.spark.avro
+        spark.sql.sources.schema.numPartCols    1
+        spark.sql.sources.schema.numParts       1
+        spark.sql.sources.schema.part.0 {\"type\":\"struct\",\"fields\":[{\"name\":\"order_id\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{\"comment\":\"\"}},{\"name\":\"order_date\",\"type\":\"long\",\"nullable\":true,\"metadata\":{\"comment\":\"\"}},{\"name\":\"order_customer_id\",\"type\":\"integer\",\"nullable\":true,\"metadata\":{\"comment\":\"\"}},{\"name\":\"order_status\",\"type\":\"string\",\"nullable\":true,\"metadata\":{\"comment\":\"\"}},{\"name\":\"order_month\",\"type\":\"string\",\"nullable\":true,\"metadata\":{}}]}
+        spark.sql.sources.schema.partCol.0      order_month
+        transient_lastDdlTime   1558421361
+
+# Storage Information
+SerDe Library:          org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+InputFormat:            org.apache.hadoop.mapred.SequenceFileInputFormat
+OutputFormat:           org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+Compressed:             No
+Num Buckets:            -1
+Bucket Columns:         []
+Sort Columns:           []
+Storage Desc Params:
+        path                    hdfs://nn01.itversity.com:8020/user/kranthidr/arun/kkd_problem3/orders_avro1
+        serialization.format    1
+Time taken: 0.363 seconds, Fetched: 39 row(s)
+hive (kkd_problem3)>

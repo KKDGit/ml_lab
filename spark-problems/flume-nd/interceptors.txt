@@ -1,0 +1,42 @@
+# Name the components on this agent
+InterceptAgent.sources = Netcat
+InterceptAgent.sinks = LoggerSink
+InterceptAgent.channels = Memchannel
+
+
+# Describe/configure the source - netcat
+InterceptAgent.sources.Netcat.type = netcat
+InterceptAgent.sources.Netcat.bind = localhost
+InterceptAgent.sources.Netcat.port = 56525
+
+# Describe the Logger sink
+InterceptAgent.sinks.LoggerSink.type = logger
+
+#Attach Interceptors to source
+InterceptAgent.sources.Netcat.interceptors=r1 h1 t1 s1 
+
+#Configure Regex Interceptor
+InterceptAgent.sources.Netcat.interceptors.r1.type=regex_filter
+InterceptAgent.sources.Netcat.interceptors.r1.regex=developer
+InterceptAgent.sources.Netcat.interceptors.r1.excludeEvents=true
+
+#Configure Host Interceptor
+InterceptAgent.sources.Netcat.interceptors.h1.type=host
+ 
+#Configure Time Interceptor
+InterceptAgent.sources.Netcat.interceptors.t1.type=timestamp
+
+#Configure Static Interceptor
+InterceptAgent.sources.Netcat.interceptors.s1.type=static
+InterceptAgent.sources.Netcat.interceptors.s1.key=datacenter
+InterceptAgent.sources.Netcat.interceptors.s1.value=US
+
+
+# Use a channel which buffers events in memory
+InterceptAgent.channels.Memchannel.type = memory
+InterceptAgent.channels.Memchannel.capacity = 1000
+InterceptAgent.channels.Memchannel.transactionCapacity = 100
+
+# Bind the source and sink to the channel
+InterceptAgent.sources.Netcat.channels = Memchannel
+InterceptAgent.sinks.LoggerSink.channel = Memchannel

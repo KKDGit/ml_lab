@@ -1,5 +1,5 @@
 #use Toree version 0.2.0 jar
-jupyter toree install --kernel_name='spark' --log-level=50 --spark_home=/usr/hdp/current/spark2-client --user --replace --spark_opts="--master yarn"
+jupyter toree install --kernel_name='ssy27' --log-level=50 --spark_home=/usr/hdp/current/spark2-client --user --replace --spark_opts="--master yarn"
 
 jupyter toree install --kernel_name='spark' --log-level=50 --spark_home=/usr/hdp/current/spark2-client --user --replace --spark_opts="--master yarn --packages graphframes:graphframes:0.6.0-spark2.3-s_2.11,mysql:mysql-connector-java:5.1.6,org.xerial:sqlite-jdbc:3.23.1,org.mongodb.spark:mongo-spark-connector_2.11:2.3.0,com.datastax.spark:spark-cassandra-connector_2.11:2.3.1,com.databricks:spark-avro_2.11:4.0.0"
 

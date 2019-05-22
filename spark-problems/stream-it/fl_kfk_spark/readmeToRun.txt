@@ -43,5 +43,14 @@ spark-submit \
 --conf spark.ui.port=4444 \
 target/scala-2.11/*assembly*.jar yarn
 
+-----------------------------------------
+spark.read.text("/user/kranthidr/spark-problems/stream-it/fl-kfk-spark/cnt-1558097400000").show()
+sc.textFile("/user/kranthidr/spark-problems/stream-it/fl-kfk-spark/cnt-1558097400000").toDF().show()
+sc.wholeTextFiles("/user/kranthidr/spark-problems/stream-it/fl-kfk-spark/cnt-1558097400000").toDF().show(false)
+sc.wholeTextFiles("/user/kranthidr/spark-problems/stream-it/fl-kfk-spark/*").toDF().show(false)
+sc.textFile("/user/kranthidr/spark-problems/stream-it/fl-kfk-spark/*").toDF().show(false)
 
 
+val cc = spark.read.text("/user/kranthidr/spark-problems/stream-it/fl-kfk-spark/*")
+val cc1 = cc.select(ltrim(split('value,",")(0),"(").as("dept"), rtrim(split('value,",")(1),")").as("count").cast(IntegerType))
+cc1.groupBy('dept).sum("count").show()

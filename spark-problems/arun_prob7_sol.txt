@@ -1,0 +1,105 @@
+A.
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db \
+--username retail_user --password itversity --table orders \
+--num-mappers 1 --as-avrodatafile \
+--target-dir /user/kranthidr/arun/problem7/prework
+
+B.
+mkdir -p /home/kranthidr/arun/problem7/prework/flume-avro
+hadoop fs -get /user/kranthidr/arun/problem7/prework/* /home/kranthidr/arun/problem7/prework/flume-avro
+
+C.
+vi avro-jdbc-hdfs.conf
+........................
+AJH.sources = avro-source
+AJH.channels = jdbc-channel
+AJH.sinks = hdfs-sink
+
+AJH.sources.avro-source.type = avro
+AJH.sources.avro-source.bind = gw02.itversity.com
+AJH.sources.avro-source.port = 11112
+
+AJH.channels.jdbc-channel.type=file
+AJH.channels.jdbc-channel.dataDirs=/home/kranthidr/nc-file-hdfs/data
+AJH.channels.jdbc-channel.checkpointDir=/home/kranthidr/nc-file-hdfs/checkpoint
+-----------------------------------------------------------------
+AJH.channels.jdbc-channel.type=memory
+AJH.channels.jdbc-channel.capacity = 10000
+AJH.channels.jdbc-channel.transactionCapacity = 2000
+-----------------------------------------------------------
+//No difference between memory and file channels ....only 844 records
+//jdbc channel doesnt work due to type cast exception
+-----------------------------------------------------------------------
+
+AJH.sinks.hdfs-sink.type = hdfs
+AJH.sinks.hdfs-sink.hdfs.path = /user/kranthidr/arun/problem7/sink
+AJH.sinks.hdfs-sink.hdfs.fileType = DataStream
+AJH.sinks.hdfs-sink.hdfs.fileSuffix = .avro
+AJH.sinks.hdfs-sink.serializer = avro_event
+AJH.sinks.hdfs-sink.serializer.compressionCodec = snappy
+
+--------------------------------------------------------
+AJH.sinks.hdfs-sink.hdfs.rollInterval = 0
+AJH.sinks.hdfs-sink.hdfs.rollSize = 356000 
+AJH.sinks.hdfs-sink.hdfs.rollCount = 0
+//8 files 844 records //without this 586 files are created but with 844 records
+//not able read even those records....
+--------------------------------------------------------
+
+
+AJH.sources.avro-source.channels = jdbc-channel
+AJH.sinks.hdfs-sink.channel = jdbc-channel
+
+...........................
+
+flume-ng agent --name AJH --conf /home/kranthidr/projects/ml_lab/spark-problems --conf-file /home/kranthidr/projects/ml_lab/spark-problems/avro-jdbc-hdfs.conf
+
+flume-ng avro-client --host gw02.itversity.com --port 11112 --conf /home/kranthidr/projects/ml_lab/spark-problems --dirname /home/kranthidr/arun/problem7/prework/flume-avro //not working
+
+flume-ng avro-client --host gw02.itversity.com --port 11112 --conf /home/kranthidr/projects/ml_lab/spark-problems --filename /home/kranthidr/arun/problem7/prework/flume-avro/part-m-00000.avro
+
+----------------------------------------------------
+mkdir flume-logs
+cd flume-logs
+
+create flume configuration file
+
+# Name the components on this agent
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# Describe/configure the source
+a1.sources.r1.type = exec
+a1.sources.r1.command = tail -F /opt/gen_logs/logs/access.log
+
+
+# Describe the sink
+a1.sinks.k1.type = hdfs
+a1.sinks.k1.hdfs.path = /user/cloudera/problem7/step2
+a1.sinks.k1.hdfs.fileSuffix = .log
+a1.sinks.k1.hdfs.writeFormat = Text
+a1.sinks.k1.hdfs.fileType = DataStream
+
+# Use a channel which buffers events in memory
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 200
+
+# Bind the source and sink to the channel
+a1.sources.r1.channels = c1
+
+a1.sinks.k1.channel = c1
+
+create hdfs sink directory
+
+hadoop fs -mkdir /user/cloudera/problem7/sink
+
+Run the flume-agent
+
+flume-ng agent --name a1 --conf . --conf-file f.config
+
+
+
+

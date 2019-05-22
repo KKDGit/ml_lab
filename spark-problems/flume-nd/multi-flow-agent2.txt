@@ -1,0 +1,22 @@
+agent_foo.sources = avro-AppSrv-source
+agent_foo.sinks = hdfs-Cluster1-sink
+agent_foo.channels = mem-channel-1
+
+# properties of avro-AppSrv-source
+agent_foo.sources.avro-AppSrv-source.type = avro
+agent_foo.sources.avro-AppSrv-source.bind = localhost
+agent_foo.sources.avro-AppSrv-source.port = 10003
+
+# properties of mem-channel-1
+agent_foo.channels.mem-channel-1.type = memory
+agent_foo.channels.mem-channel-1.capacity = 1000
+agent_foo.channels.mem-channel-1.transactionCapacity = 100
+
+# properties of hdfs-Cluster1-sink
+agent_foo.sinks.hdfs-Cluster1-sink.type = hdfs
+agent_foo.sinks.hdfs-Cluster1-sink.hdfs.path = /user/cloudera/flume/multi-flow
+
+# set channel for sources, sinks
+agent_foo.sources.avro-AppSrv-source.channels=mem-channel-1
+agent_foo.sinks.hdfs-Cluster1-sink.channel=mem-channel-1
+

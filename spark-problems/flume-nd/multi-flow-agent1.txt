@@ -1,0 +1,18 @@
+agent_bar.sources = avro-AppSrv-source
+agent_bar.sinks = avro-forward-sink
+agent_bar.channels = memory-channel
+
+# define the flow
+agent_bar.sources.avro-AppSrv-source.channels = memory-channel
+agent_bar.sinks.avro-forward-sink.channel = memory-channel
+
+# avro sink properties
+agent_bar.sinks.avro-forward-sink.type =avro
+agent_bar.sinks.avro-forward-sink.hostname =localhost
+agent_bar.sinks.avro-forward-sink.port =10003
+
+agent_bar.sources.avro-AppSrv-source.type=netcat
+agent_bar.sources.avro-AppSrv-source.bind=localhost
+agent_bar.sources.avro-AppSrv-source.port=10004
+
+agent_bar.channels.memory-channel.type=memory

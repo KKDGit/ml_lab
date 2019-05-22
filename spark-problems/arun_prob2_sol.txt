@@ -1,4 +1,30 @@
 /*
+1.
+Using sqoop copy data available in mysql products table to folder /user/kranthidr/arun/products on hdfs as text file. 
+columns should be delimited by pipe '|'
+move all the files from /user/kranthidr/arun/products folder to /user/kranthidr/arun/problem2/products folder
+
+2.
+Change permissions of all the files under /user/kranthidr/arun/problem2/products such that owner has read,write and execute permissions, 
+group has read and write permissions whereas others have just read and execute permissions //read = 4, write = 2, execute = 1..765
+*/
+
+hadoop fs -mkdir -p /user/kranthidr/arun/problem2
+
+sqoop import \
+--connect 'jdbc:mysql://ms.itversity.com:3306/retail_db' \
+--username retail_user --password itversity \
+--table products \
+--target-dir '/user/kranthidr/arun/products' \
+--fields-terminated-by '|' \
+--as-textfile
+
+hadoop fs -cp /user/kranthidr/arun/products /user/kranthidr/arun/problem2/
+
+hadoop fs -chmod -R 765 /user/kranthidr/arun/problem2/products
+
+=======================================================================
+/*
 3.
 read data in /user/cloudera/problem2/products and do the following operations using 
 a) dataframes api 
