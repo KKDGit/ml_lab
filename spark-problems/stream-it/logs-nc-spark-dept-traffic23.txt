@@ -1,0 +1,21 @@
+//This is the source and spark consumes it //// tail_logs.sh | nc -lk gw02.itversity.com 5555//
+
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+val scst = spark.readStream.format("socket").option("host","gw02.itversity.com").option("port","5555").load()
+scst.writeStream.format("memory").queryName("logs").start()
+val tet = spark.sql("select * from logs limit 100")
+tet.count()
+tet.show()
+tet.select(split(split('value, " ")(6),"/")(1).as("dpt")).filter('dpt === "department").show()
+tet.select(split(split('value, " ")(6),"/")(1).as("dpt"),split(split('value, " ")(6),"/")(2).as("cat")).filter('dpt === "department").show()
+
+val tet1 = tet.select(split(split('value, " ")(6),"/")(1).as("dpt"),split(split('value, " ")(6),"/")(2).as("cat")).filter('dpt === "department")
+val tet2 = tet1.groupBy("cat").count().show()
+
+
+val op = scst.select(split(split('value, " ")(6),"/")(1).as("dpt"),split(split('value, " ")(6),"/")(2).as("cat")).filter('dpt === "department").groupBy("cat").count()
+
+op.writeStream.format("memory").outputMode("complete").queryName("logs_op").start()
+
+
+
