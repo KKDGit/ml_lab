@@ -1,0 +1,297 @@
+CCA Sample - it 
+-----------------
+Intro
+1. 
+spark-shell \
+--packages com.databricks:spark-avro_2.11:4.0.0 \
+--master yarn \
+--conf spark.ui.port=22222 \
+--num-executors 4 \
+--executor-cores 2 \
+--executor-memory 3G 
+----------------
+Problem 1:
+val ip_csv = spark.read.option("header","true").csv("/public/crime/csv").select("ID", "Date", "Primary Type").cache()
+ip_csv.count()
+ip_csv.show(false)
+import org.apache.spark.sql.functions.{split,concat,concat_ws}
+
+ip_csv.select(split('Date," ")(0).as("day")).select(concat(split('day, "/")(2),split('day, "/")(0))).show(false)
+val sp1 = split('Date," ")(0).as("day")
+val sp2 = concat(split('day, "/")(2),split('day, "/")(0)).as("month")
+
+val f_df = ip_csv.select('*, sp1).select('*,sp2).drop("Date","day")
+f_df.show(false)
+
+f_df.groupBy("month","Primary Type").count().orderBy($"month".asc,'count.desc).show()
+val op = f_df.groupBy("month","Primary Type").count().coalesce(1).orderBy($"month".asc,'count.desc).select("month", "count", "Primary Type")
+
+op.select(concat_ws("\t",'month, 'count, $"Primary Type")).write.mode("overwrite").options(Map("compression" -> "gzip")).text("/user/kranthidr/solutions/solution01/crimes_by_type_by_month")
+op.count()//5476
+val test = spark.read.option("delimiter", "\t").csv("/user/kranthidr/solutions/solution01/crimes_by_type_by_month")
+test.count()//5476
+------------------------------
+/////////////////
+scala> ip_csv.select(to_timestamp(lit("04/03/2003 02:25:00 AM"),"MM/dd/yyyy hh:mm:ss aa")).show(1)
++----------------------------------------------------------------+
+|to_timestamp('04/03/2003 02:25:00 AM', 'MM/dd/yyyy hh:mm:ss aa')|
++----------------------------------------------------------------+
+|                                             2003-04-03 02:25:00|
++----------------------------------------------------------------+
+only showing top 1 row
+
+
+scala> ip_csv.select(to_timestamp(lit("04/03/2005 02:25:00 AM"),"MM/dd/yyyy hh:mm:ss aa")).show(1)
++----------------------------------------------------------------+
+|to_timestamp('04/03/2005 02:25:00 AM', 'MM/dd/yyyy hh:mm:ss aa')|
++----------------------------------------------------------------+
+|                                                            null|
++----------------------------------------------------------------+
+only showing top 1 row
+/////////////////////////////////////////////////////////// WHY?????
+Date Format
+The following pattern letters are defined (all other characters from 'A' to 'Z' and from 'a' to 'z' are reserved):
+
+Letter	Date or Time Component	Presentation	Examples
+G	Era designator	Text	AD
+y	Year	Year	1996; 96
+M	Month in year	Month	July; Jul; 07
+w	Week in year	Number	27
+W	Week in month	Number	2
+D	Day in year	Number	189
+d	Day in month	Number	10
+F	Day of week in month	Number	2
+E	Day in week	Text	Tuesday; Tue
+a	Am/pm marker	Text	PM
+H	Hour in day (0-23)	Number	0
+k	Hour in day (1-24)	Number	24
+K	Hour in am/pm (0-11)	Number	0
+h	Hour in am/pm (1-12)	Number	12
+m	Minute in hour	Number	30
+s	Second in minute	Number	55
+S	Millisecond	Number	978
+z	Time zone	General time zone	Pacific Standard Time; PST; GMT-08:00
+Z	Time zone	RFC 822 time zone	-0800
+Pattern letters are usually repeated, as their number determines the exact presentation:
+Examples
+The following examples show how date and time patterns are interpreted in the U.S. locale. The given date and time are 2001-07-04 12:08:56 local time in the U.S. Pacific Time time zone.
+Date and Time Pattern	Result
+"yyyy.MM.dd G 'at' HH:mm:ss z"	2001.07.04 AD at 12:08:56 PDT
+"EEE, MMM d, ''yy"	Wed, Jul 4, '01
+"h:mm a"	12:08 PM
+"hh 'o''clock' a, zzzz"	12 o'clock PM, Pacific Daylight Time
+"K:mm a, z"	0:08 PM, PDT
+"yyyyy.MMMMM.dd GGG hh:mm aaa"	02001.July.04 AD 12:08 PM
+"EEE, d MMM yyyy HH:mm:ss Z"	Wed, 4 Jul 2001 12:08:56 -0700
+"yyMMddHHmmssZ"	010704120856-0700
+"yyyy-MM-dd'T'HH:mm:ss.SSSZ"	2001-07-04T12:08:56.235-0700
+----------------------------------
+val df = spark.read.format("csv").option("header", "true").option("inferSchema", "true").load("/user/kranthidr/dataSets/spark-guide/retail-data/by-day/2010-12-01.csv")
+
+import org.apache.spark.sql.functions._
+
+df.where(col("Description").isNull).show(5, false)
+
+df.select(when(isnull('Description), 1)).show() //here otherwise value is null - default
+df.select(when(isnull('Description), 1).otherwise(0)).show()
+df.select(when(isnull('Description), 1).otherwise(0).alias("nullCount")).groupBy("nullCount").count().show()
+df.select(when(col("Description").isNull, 1).otherwise(0).alias("nullCount")).groupBy("nullCount").count().show()
+df.select(when(isnan('Description), 1).otherwise(0).alias("nanCount")).groupBy("nanCount").count().show()
+df.select(count(when(isnan('Description), 1))).show()
+df.select(count(when(isnull('Description), 1))).show() //only nulls count is shown
+df.select(count(when(isnull('Description), 1).otherwise(0))).show()//gives total of df rows
+--BUT--
+val k = df.select(when(isnull('Description), 1).as("dummy"))
+k.show()
+k.count() //all rows
+k.select(count("dummy")).show() //only null rows
+
+val cols = df.columns.map(c => count(when(col(c).isNull, c)).alias("cn_"+c))
+df.select(cols:_*).show(false)
+val cols_nanOrnull = df.columns.filter(_ != "InvoiceDate").map(c => count(when(col(c).isNaN || col(c).isNull, 1)).alias("cn_"+c))
+// not work due to Date Column so filter is needed
+df.select(cols_nanOrnull:_*).show()
+
+val cols_nan = df.columns.filter(_ != "InvoiceDate").map(c => count(when(col(c).isNaN, 1)).alias("cn_"+c))
+df.select(cols_nan:_*).show()
+
+.....
+.....
+val cols1 = df.columns.map(c => count(when(col(c).isNull, 1)).alias("cn_"+c))
+df.select(cols1:_*).show(false)
+---------------------------------
+Problem 2
+......
+import scala.io.Source
+
+val ordersRaw = Source.fromFile("/data/retail_db/orders/part-00000").getLines.toList
+val ordersRDD = sc.parallelize(ordersRaw)
+
+val customersRaw = Source.fromFile("/data/retail_db/customers/part-00000").getLines.toList
+val customersRDD = sc.parallelize(customersRaw)
+
+.......
+val orders = spark.read.csv("/public/retail_db/orders").toDF("order_id", "order_date", "order_customer_id", "order_status").select("order_id","order_customer_id")
+
+val ip = spark.read.csv("/public/retail_db/customers")
+val cols = Array("customer_id", "customer_fname", "customer_lname") ++ ip.columns.takeRight(6)
+val customers = ip.toDF(cols:_*).select("customer_id", "customer_fname", "customer_lname")
+
+val joined = customers.join(orders,'order_customer_id === 'customer_id ,"left_outer").where('order_id.isNull).select("customer_lname", "customer_fname") //30
+
+joined.coalesce(1).orderBy('customer_lname, 'customer_fname).rdd.map(x => x.mkString(",")).saveAsTextFile("/user/kranthidr/solutions/solutions02/inactive_customers")
+val op = spark.read.csv("/user/kranthidr/solutions/solutions02/inactive_customers")//30
+
+val joined1 = customers.join(orders,'order_customer_id === 'customer_id ,"left_outer").where('order_id.isNull).select("customer_lname", "customer_fname","customer_id") //30
+
+joined1.coalesce(1).orderBy('customer_lname, 'customer_fname).rdd.map(x => x.mkString(",")).saveAsTextFile("/user/kranthidr/solutions/solutions02/inactive_customers1")
+val op1 = spark.read.csv("/user/kranthidr/solutions/solutions02/inactive_customers1")//30
+-----------------------------------------------------------
+problem 3
+val crime = spark.read.option("header", "true").csv("/public/crime/csv")
+val df = crime.select("ID", "Primary Type", "Location Description").where($"Location Description" === "RESIDENCE")
+df.show()
+
+df.groupBy("Primary Type").count().orderBy('count.desc).limit(3).show()
+val fin = df.groupBy("Primary Type").count().orderBy('count.desc).limit(3).withColumnRenamed("Primary Type", "Crime Type").withColumnRenamed("count","Number of Incidents")
+fin.show()
+fin.coalesce(1).write.json("/user/kranthidr/solutions/solution03/RESIDENCE_AREA_CRIMINAL_TYPE_DATA")
+....
+{"Crime Type":"BATTERY","Number of Incidents":244394}
+{"Crime Type":"OTHER OFFENSE","Number of Incidents":184667}
+{"Crime Type":"THEFT","Number of Incidents":142273}
+........
+-----------------------------
+problem 4 
+.......
+val nyse = sc.textFile("/user/dgadiraju/nyse").
+  map(stock => {
+    val s = stock.split(",")
+    (s(0), s(1), s(2).toFloat, s(3).toFloat, s(4).toFloat, s(5).toFloat, s(6).toInt)
+  }).
+  toDF("stockticker", "transactiondate", "openprice", "highprice", "lowprice", "closeprice", "volume")
+  nyse.write.parquet("/user/kranthidr/soultions/nyse_parquet2")
+............
+case class Stock(stockticker:String, transactiondate:String, openprice:Float, highprice:Float, lowprice:Float, closeprice:Float, volume:Long)
+val nyse_r = sc.textFile("/user/kranthidr/solutions/nyse").map(x => x.split(","))
+val nyse = nyse_r.map(x => Stock(x(0),x(1),x(2).toFloat,x(3).toFloat,x(4).toFloat,x(5).toFloat,x(6).toLong)).toDF()
+nyse.write.parquet("/user/kranthidr/soultions/nyse_parquet1")
+-----------------------
+
+case class Stock(stockticker:String, transactiondate:String, openprice:Float, highprice:Float, lowprice:Float, closeprice:Float, volume:BigInt)
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.catalyst.ScalaReflection
+val schema = ScalaReflection.schemaFor[Stock].dataType.asInstanceOf[StructType]
+
+val stocks = spark.read.schema(schema).csv("/user/kranthidr/solutions/nyse")
+stocks.count()
+stocks.show()
+stocks.write.mode("overwrite").parquet("/user/kranthidr/solutions/nyse_parquet")
+val op = spark.read.parquet("/user/kranthidr/solutions/nyse_parquet")
+op.count()
+op.show()
+op.printSchema
+....
+----------------------------------
+problem 5
+
+spark-shell \
+--packages com.databricks:spark-avro_2.11:4.0.0 \
+--master yarn \
+--conf spark.ui.port=22222 \
+--num-executors 4 \
+--executor-cores 2 \
+--executor-memory 3G
+-----------------------
+
+
+val lines = spark.read.text("/public/randomtextwriter").cache()
+lines.count()
+lines.show()
+import org.apache.spark.sql.functions._
+import com.databricks.spark.avro._
+
+val words = lines.select(explode(split('value," ")))
+words.printSchema
+words.groupBy('col).count().show()
+val words_count = words.groupBy('col).count()
+words_count.withColumnRenamed("col","word").coalesce(8).write.avro("/user/kranthidr/solutions/solution05/wordcount")
+val op = spark.read.avro("/user/kranthidr/solutions/solution05/wordcount")
+op.show()
+op.printSchema
+----------------------------------------------
+problem 6
+step1:Hive Shell
+CREATE DATABASE kranthidr_retail_db_txt
+setp2:Bash Shell
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db   \
+--username retail_user   \
+--password itversity \
+--table orders --autoreset-to-one-mapper \
+--hive-import --create-hive-table \
+--hive-database kranthidr_retail_db_txt
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db   \
+--username retail_user   \
+--password itversity \
+--table order_items --autoreset-to-one-mapper \
+--hive-import --create-hive-table \
+--hive-database kranthidr_retail_db_txt
+
+sqoop import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_db   \
+--username retail_user   \
+--password itversity \
+--table customers --autoreset-to-one-mapper \
+--hive-import --create-hive-table \
+--hive-database kranthidr_retail_db_txt
+
+spark.sql("USE kranthidr_retail_db_txt")
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.expressions._
+
+
+val month = concat(substring('order_date,0,4),substring('order_date,6,2)).as("month")
+val orders = spark.sql("select * from orders").select('order_id,'order_date, month,'order_customer_id)
+val order_items_r = spark.sql("select * from order_items")
+val order_items = order_items_r.groupBy("order_item_order_id").agg(sum('order_item_subtotal).as("order_value"))
+
+/*
+val ord_cols = orders.columns.map(c => count(when(col(c).isNull, 1)).alias("cn_"+c))
+orders.select(ord_cols:_*).show(false)
+
+val item_cols = order_items_r.columns.map(c => count(when(col(c).isNull, 1)).alias("cn_"+c))
+order_items_r.select(item_cols:_*).show(false)
+
+val cols = order_items.columns.map(c => count(when(col(c).isNull, 1)).alias("cn_"+c))
+order_items.select(cols:_*).show(false)
+*/
+
+val ord_values = orders.join(order_items,'order_id === 'order_item_order_id,"inner").drop("order_date", "order_item_order_id").orderBy("order_id")
+val cols_i = ord_values.columns.map(c => count(when(col(c).isNull, 1)).alias("cn_"+c))
+ord_values.select(cols_i:_*).show(false)
+
+ord_values.show()
+
+val win1 = Window.partitionBy('month,'order_customer_id)
+val revenue_per_month = sum('order_value).over(win1).as("revenue_per_month")
+val fin1 = ord_values.select('*, revenue_per_month).select('month, 'order_customer_id, $"revenue_per_month").distinct()
+
+val win2 = Window.partitionBy("month").orderBy($"revenue_per_month".desc)
+val rk = rank().over(win2).as("rk")
+val fin2 = fin1.select('*, rk).where("rk <=5").orderBy('month.asc, $"revenue_per_month".desc)
+
+val customers = spark.sql("select * from customers")
+val fin3 = fin2.join(customers, 'order_customer_id === 'customer_id,"left_outer").drop("rk", "order_customer_id")
+fin3.write.mode("overwrite").saveAsTable("top5_customers_per_month")
+fin3.count()
+fin3.show()
+//describe formatted top5_customers_per_month in Hive Shell
+val op = spark.read.parquet("/apps/hive/warehouse/kranthidr_retail_db_txt.db/top5_customers_per_month")
+op.count()
+op.columns
+
+val cs = "month, revenue_per_month, customer_id, customer_fname, customer_lname".split(", ")
+op.selectExpr(cs:_*).orderBy('month.asc, $"revenue_per_month".desc).show()

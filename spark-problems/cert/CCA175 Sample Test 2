@@ -1,0 +1,544 @@
+CCA175 Sample Test 2
+------------------------
+8 questions | 2 hours | 70% correct required to pass
+Practice these questions without looking into solution. 
+Actual exam is hands on exercise and not multiple choice.
+Solutions and choices are provided only to help you.
+
+Actual Exam will be of 2 hours with 9-10 questions
+
+Prerequisite Section will not be there in actual exam.
+
+
+This practice test will test your knowledge about sqoop import/export, various file formats and spark transformation.
+You must remember sqoop commands and In case you need any help on syntax you can use "sqoop import --help" or "sqoop export --help" on terminal 
+and don't rely on external documentation for help as it will be really slow. 
+Try to copy paste the output and input path provided rather than typing it.
+
+
+Instructions:
+You can pause the test at any time and resume later.
+You can retake the test as many times as you would like.
+The progress bar at the top of the screen will show your progress as well as the time remaining in the test. 
+If you run out of time, don’t worry; you will still be able to finish the test.
+You can skip a question to come back to at the end of the exam.
+You can also use “Mark for Review” to come back to questions you are unsure about before you submit your test.
+If you want to finish the test and see your results immediately, press the stop button.
+---------------------------
+Question 1:
+Instructions:
+
+Connect to mySQL database using sqoop, import all products into a metastore table named product_new inside default database.
+
+Data Description:
+
+A mysql instance is running on the gateway node.
+In that instance you will find products table
+
+> Installation : on the cluser node gateway 
+
+> Database name:  retail_db
+
+> Table name: Products
+
+> Username: root
+
+> Password: cloudera
+
+Output Requirement:
+
+product_new table does not exist in metastore.
+
+Save output in parquet format fields separated by a colon.
+
+[You will not be provided with any answer choice in actual exam.Below answers are just provided to guide you]
+=======================================
+=========================================
+sqoop import --connect "jdbc:mysql://gateway/retail_db" --username root --password cloudera \
+--table products  \
+--fields-terminated-by ':'  --hive-import --create-hive-table --hive-database default \
+--hive-table product_new --as-parquetfile -m 1
+--------------
+mysol:
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username root --password cloudera --table products \
+--hive-import --create-hive-table --hive-database default --hive-table product_new \
+--fields-terminated-by ":" --as-parquetfile
+==========================================
+
+Question 2:
+PreRequiste:
+
+[Prerequisite section will not be there in actual exam]
+
+Create product_hive table in mysql using below script:
+
+use retail_db;
+
+create table product_hive as select * from products;
+
+truncate product_hive;
+
+Instructions:
+
+Using sqoop export all data from metastore product_new table created in last problem statement into products_hive table table in mysql. 
+
+Data Description:
+
+A mysql instance is running on the gateway node.
+In that instance you will find customers table that contains customers data.
+
+> Installation : on the cluser node gateway 
+
+> Database name:  retail_db
+
+> Table name: product_hive
+> Username: root
+
+> Password: cloudera
+
+Output Requirement:
+
+product_hive  table should contain all product data imported from hive table.
+
+[You will not be provided with any answer choice in actual exam.Below answers are just provided to guide you]
+
+========================================================
+mysql -uroot -pcloudera
+mysql>
+use retail_db;
+create table product_hive as select * from products;
+truncate product_hive;
+========================================================
+sqoop export --connect jdbc:mysql://localhost/retail_db --username root -password cloudera --
+table product_hive --hcatalog-table product_new
+----------
+mysol:
+sqoop export \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username root --password cloudera --table product_hive \
+--hcatalog-table product_new
+===========================================================
+Question 3:
+PreRequiste:
+
+[PreRequiste will not be there in actual exam]
+
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" --password cloudera --username root --table orders --fields-terminated-by "\t" --target-dir /user/cloudera/practice2/problem3/orders
+
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" --password cloudera --username root --table order_items --fields-terminated-by "\t" --target-dir /user/cloudera/practice2/problem3/order_items
+
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" --password cloudera --username root --table customers --fields-terminated-by "\t" --target-dir /user/cloudera/practice2/problem3/customers
+
+
+
+Instructions
+
+Get all customers who have placed order of amount more than 200.
+
+
+
+Input files are tab delimeted files placed at below HDFS location:
+
+/user/cloudera/practice2/problem3/customers
+
+/user/cloudera/practice2/problem3/orders
+
+/user/cloudera/practice2/problem3/order_items
+
+
+Schema for customers File
+
+Customer_id,customer_fname,customer_lname,customer_email,customer_password,customer_street,customer_city,customer_state,customer_zipcode
+
+
+
+Schema for Orders File
+
+Order_id,order_date,order_customer_id,order_status
+
+
+
+Schema for Order_Items File
+
+Order_item_id,Order_item_order_id,order_item_product_id,Order_item_quantity,Order_item_subtotal,Order_item_product_price
+
+
+
+Output Requirements:
+
+>> Output should be placed in below HDFS Location
+
+/user/cloudera/practice2/problem3/joinResults
+
+
+
+>> Output file should be comma seperated file with customer_fname,customer_lname,customer_city,order_amount
+
+
+
+[Providing the solution here only because answer is too long to put in choices.You will not be provided with any answer choice in actual exam.Below answer is just provided to guide you. Please check video explanations for more info.]
+
+
+=======================================================================================
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" --password cloudera --username root --table orders --fields-terminated-by "\t" --target-dir /user/cloudera/practice2/problem3/orders
+
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" --password cloudera --username root --table order_items --fields-terminated-by "\t" --target-dir /user/cloudera/practice2/problem3/order_items
+
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" --password cloudera --username root --table customers --fields-terminated-by "\t" --target-dir /user/cloudera/practice2/problem3/customers
+========================================================================================
+mysol1:
+val customers = spark.read.option("delimiter","\t").csv("/user/cloudera/practice2/problem3/customers").toDF("customer_id","customer_fname","customer_lname","customer_email","customer_password","customer_street","customer_city","customer_state","customer_zipcode")
+
+val orders = spark.read.option("delimiter","\t").csv("/user/cloudera/practice2/problem3/orders").toDF("order_id","order_date","order_customer_id","order_status")
+
+val order_items = spark.read.option("delimiter","\t").csv("/user/cloudera/practice2/problem3/order_items").toDF("order_item_id","order_item_order_id","order_item_product_id","order_item_quantity","order_item_subtotal","order_item_product_price")
+
+
+val join1 = orders.col("order_id") === order_items.col("order_item_order_id")
+val join2 = orders.col("order_customer_id") === customers.col("customer_id")
+val joined = order_items.join(orders,join1,"left_outer").join(customers,join2,"left_outer")
+joined.count()
+order_items.count()
+
+val op1 = joined.select("customer_fname","customer_lname","customer_city","order_id","order_item_subtotal")
+
+import org.apache.spark.sql.types.FloatType
+val op2 = op1.withColumn("subtotal",$"order_item_subtotal".cast(FloatType))
+
+val op3 = op2.drop("order_item_subtotal").groupBy("order_id","customer_fname","customer_lname","customer_city").sum("subtotal").
+withColumn("order_amount",$"sum(subtotal)").drop("sum(subtotal)")
+val fil = op3.select("customer_fname","customer_lname","customer_city","order_amount").filter("order_amount > 200")
+op3.count()
+fil.count()//48665
+fil.write.mode("overwrite").csv("/user/cloudera/practice2/problem3/joinResults")
+spark.read.csv("/user/cloudera/practice2/problem3/joinResults").count()
+-----------------
+mysol2:
+
+val customers = spark.read.option("delimiter","\t").csv("/user/cloudera/practice2/problem3/customers").toDF("customer_id","customer_fname","customer_lname","customer_email","customer_password","customer_street","customer_city","customer_state","customer_zipcode").select("customer_id","customer_fname","customer_lname","customer_city")
+//12435
+val orders = spark.read.option("delimiter","\t").csv("/user/cloudera/practice2/problem3/orders").toDF("order_id","order_date","order_customer_id","order_status").select("order_id","order_customer_id")
+//68883
+val order_items = spark.read.option("delimiter","\t").csv("/user/cloudera/practice2/problem3/order_items").toDF("order_item_id","order_item_order_id","order_item_product_id","order_item_quantity","order_item_subtotal","order_item_product_price").select("order_item_order_id","order_item_subtotal")
+//172198
+val join1 = orders.col("order_id") === order_items.col("order_item_order_id")
+val joined1 = order_items.join(orders,join1,"left_outer")
+joined1.count()
+order_items.count()
+
+import org.apache.spark.sql.types.FloatType
+val pr1 = joined1.withColumn("subtotal",$"order_item_subtotal".cast(FloatType)).drop("order_item_subtotal")
+
+val pr2 = pr1.groupBy("order_id","order_customer_id").sum("subtotal").withColumn("order_amount",$"sum(subtotal)").drop("sum(subtotal)").filter("order_amount > 200")
+
+pr2.count()//48665
+
+val join2 = pr2.col("order_customer_id") === customers.col("customer_id")
+val joined2 = pr2.join(customers,join2,"left_outer").select("customer_fname","customer_lname","customer_city","order_amount")
+
+joined2.count()
+joined2.write.mode("overwrite").csv("/user/cloudera/practice2/problem3/joinResults1")
+spark.read.csv("/user/cloudera/practice2/problem3/joinResults1").count()
+
+---------------------------------------------------------------------------------
+//Creating case classes
+case class Customer(custId:String,fname:String,lname:String,city:String)
+case class Order(ordId:String,custId:String)
+case class OrderItems(ordId:String,price:Float)
+
+//Creating dataframes
+val custDF = sc.textFile("/user/cloudera/practice2/problem3/customers").map(x => x.split("\t")).map(c => Customer(c(0),c(1),c(2),c(6))).toDF()
+//12435
+val ordDF = sc.textFile("/user/cloudera/practice2/problem3/orders").map(x => x.split("\t")).map(o => Order(o(0),o(2))).toDF()
+//68883
+val itemDF = sc.textFile("/user/cloudera/practice2/problem3/order_items").map(x => x.split("\t")).map(i => OrderItems(i(1),i(4).toFloat)).toDF()
+172198
+
+//Joining ordDF with itemDF to get all orders whose subtotal > 200
+val ordJoinDF = ordDF.join(itemDF,"ordId").where("price > 200")
+
+//Joining custDF with above joined to get all customers who has ordered for more than  200
+val ordCustDF = custDF.join(ordJoinDF,"custId").select("fname","lname","city","price")
+
+//Writing output to HDFS as comma seperated file
+ordCustDF.rdd.map(x => x.mkString(",")).saveAsTextFile("/user/cloudera/practice2/problem3/joinResults2")
+spark.read.csv("/user/cloudera/practice2/problem3/joinResults2").count() //58448
+
+val ordJoinDF1 = ordDF.join(itemDF,"ordId").groupBy("ordId","custId").sum("price").filter("sum(price) > 200") //48665
+
+//Joining custDF with above joined to get all customers who has ordered for more than  200
+val ordCustDF1 = custDF.join(ordJoinDF1,"custId").select("fname","lname","city","sum(price)") //48665
+
+//Writing output to HDFS as comma seperated file
+ordCustDF1.rdd.map(x => x.mkString(",")).saveAsTextFile("/user/cloudera/practice2/problem3/joinResults3")
+spark.read.csv("/user/cloudera/practice2/problem3/joinResults3").count()
+======================================================================================
+Question 4:
+PreRequiste:
+
+[PreRequiste will not be there in actual exam]
+
+Run below sqoop command to import customers table from mysql into hive table customers_hive:
+
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" --username root --password cloudera --table customers --warehouse-dir /user/cloudera/problem3/customers_hive/input --hive-import --create-hive-table --hive-database default --hive-table customers_hive
+
+Instructions:
+
+Get Customers from metastore table named "customers_hive" whose fname is like "Rich" and save the results in HDFS in text format.
+
+Output Requirement:
+
+Result should be saved in /user/cloudera/practice2/problem4/customers/output as text file. Output should contain only fname, lname and city
+fname and lname should seperated by tab with city seperated by colon
+
+
+Sample Output 
+Richard Plaza:Francisco
+Rich Smith:Chicago
+
+=================================================================================
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--username root --password cloudera --table customers \
+--warehouse-dir /user/cloudera/problem3/customers_hive/input \
+--hive-import --create-hive-table --hive-database default --hive-table customers_hive
+================================================================================
+val hiveContext = new org.apache.spark.sql.hive.HiveContext(sc)
+val result = hiveContext.sql("select concat(customer_fname,'\t',customer_lname,':',customer_city) from customers_hive where customer_fname like '%Rich%'")
+result.rdd.map(x =>x.mkString(",")).saveAsTextFile("/user/cloudera/practice2/problem4/customers/output1")
+spark.read.text("/user/cloudera/practice2/problem4/customers/output1").count() //76
+
+-------------
+mysol:
+spark.sql("USE DEFAULT")
+val df = spark.sql("SELECT concat(customer_fname,'\t', customer_lname, ':', customer_city) FROM customers_hive WHERE customer_fname like '%Rich%'")
+df.write.text("/user/cloudera/practice2/problem4/customers/output")
+spark.read.text("/user/cloudera/practice2/problem4/customers/output").count()//76
+import sys.process._
+"hadoop fs -ls /user/cloudera/practice2/problem4/customers/output" !
+"hadoop fs -tail /user/cloudera/practice2/problem4/customers/output/part-00003-0f328ad6-344c-43a4-9d99-fce81a082c04-c000.txt" !
+
+=====================================================================================
+
+Question 5:
+PreRequiste:
+
+[PreRequiste will not be there in actual exam]
+
+Run below sqoop command to import customer table from mysql  into hdfs to the destination /user/cloudera/problem2/customer/tab
+
+sqoop import --connect "jdbc:mysql://localhost/retail_db" --password cloudera --username root --table customers  --target-dir /user/cloudera/problem2/customer/tab --fields-terminated-by "\t" --columns "customer_id,customer_fname,customer_state"
+
+Instructions:
+
+Provided tab delimited file, get total numbers customers in each state whose first name starts with 'M'   and  save results in HDFS in json format.
+
+Input folder
+
+/user/cloudera/problem2/customer/tab
+
+
+
+Output Requirement:
+
+Result should be saved in /user/cloudera/problem2/customer_json_new.
+
+Output should have state name followed by total number of customers in that state.
+====================================================================================
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root --table customers  \
+--target-dir /user/cloudera/problem2/customer/tab \
+--fields-terminated-by "\t" --columns "customer_id,customer_fname,customer_state"
+===================================================================================
+case class Customer(fname:String,state:String)
+import spark.implicits._
+val custDF = sc.textFile("/user/cloudera/problem2/customer/tab").map(x => x.split("\t")).map(k => Customer(k(1),k(2))).toDF()
+
+val groupedData = custDF.where("fname like '%M%'").groupBy("state").count()
+groupedData.write.json("/user/cloudera/problem2/customer_json_new1")
+val op = spark.read.json("/user/cloudera/problem2/customer_json_new1")
+
+
+----
+mysol:
+val cust = spark.read.option("delimiter","\t").csv("/user/cloudera/problem2/customer/tab").toDF("id","fname","state")
+val state_cust_count = cust.filter("substring(fname, 0, 1) = 'M'").groupBy("state").count()
+state_cust_count.select("state","count").write.json("/user/cloudera/problem2/customer_json_new")
+val op = spark.read.json("/user/cloudera/problem2/customer_json_new")
+
+cust.count()//12435
+cust.show()
+state_cust_count.count()//44
+state_cust_count.show()
+op.count()//44
+op.show()
+import sys.process._
+"hadoop fs -ls /user/cloudera/problem2/customer_json_new" !
+"hadoop fs -tail /user/cloudera/problem2/customer_json_new/part-00199-39a0a072-5c5e-478e-91ee-a0bb74ea29bb-c000.json" !
+
+=======================================================================================
+
+Question 6:
+Prerequisite:
+
+[Prerequisite section will not be part of actual exam]
+
+Import products table from mysql into hive metastore table named product_ranked in warehouse directory /user/cloudera/practice4.db. Run below sqoop statement
+
+sqoop import --connect "jdbc:mysql://localhost/retail_db" --username root --password cloudera --table products --warehouse-dir /user/cloudera/practice4.db --hive-import --create-hive-table --hive-database default --hive-table product_ranked -m 1
+
+
+
+Instructions:
+
+Provided  a meta-store table named product_ranked consisting of product details ,find the most expensive product in each category.
+
+
+
+Output Requirement:
+
+Output should have product_category_id ,product_name,product_price,rank.
+
+Result should be saved in /user/cloudera/pratice4/output/  as pipe delimited text file
+
+====================================================================================
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--username root --password cloudera --table products \
+--warehouse-dir /user/cloudera/practice4.db \
+--hive-import --create-hive-table --hive-database default --hive-table product_ranked -m 1
+=====================================================================================
+val hc = new org.apache.spark.sql.hive.HiveContext(sc)
+val hiveResult = hc.sql("select p.product_category_id, p.product_name, p.product_price, dense_rank() over (partition by p.product_category_id order by p.product_price desc) as product_price_rank from product_ranked p")
+
+val expDF = hiveResult.filter("product_price_rank=1")
+expDF.rdd.map(x => x.mkString("|")).saveAsTextFile("/user/cloudera/pratice4/output1")
+----
+mysol:
+
+spark.sql("USE default")
+val products = spark.sql("select product_category_id, product_name, product_price from product_ranked")//1345
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions.{rank,concat_ws}
+val rank_win = Window.partitionBy("product_category_id").orderBy($"product_price".desc).rowsBetween(Window.unboundedPreceding, Window.currentRow)
+val ranked = rank().over(rank_win).as("rank")
+val prod_ranked = products.select('*, ranked).filter("rank=1")//131
+prod_ranked.select(concat_ws("|", 'product_category_id, 'product_name, 'product_price, 'rank)).write.text("/user/cloudera/pratice4/output")
+
+
+val prod_max = products.groupBy("product_category_id").agg(max("product_name").as("product_name"), max("product_price").as("product_price"))//55
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions.rank
+val rank_win = Window.orderBy($"product_price".desc).rowsBetween(Window.unboundedPreceding, Window.currentRow)
+val ranked = rank().over(rank_win).as("rank") //inefficient as there is no partiotioning
+val df_f = prod_max.select('*, ranked)//55
+=======================================================================================
+
+Question 7:
+PreRequiste:
+
+[PreRequiste will not be there in actual exam]
+
+Run below sqoop command to import orders table from mysql  into hdfs 
+sqoop import --connect "jdbc:mysql://localhost/retail_db" --password cloudera --username root --table orders --as-parquetfile --target-dir /user/cloudera/problem3/parquet
+
+
+
+Instructions:
+
+Fetch all pending orders from  data-files stored at hdfs location /user/cloudera/problem3/parquet and save it  into json file  in HDFS
+
+Output Requirement:
+
+Result should be saved in /user/cloudera/problem3/orders_pending
+Output file should be saved as json file.
+
+Output file should Gzip compressed.
+
+
+[Below solutions is just provided to guide you. Final exam will not provide you with any answer choice]
+
+==================================================================================
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root --table orders \
+--as-parquetfile --target-dir /user/cloudera/problem3/parquet
+================================================================================
+val dataFile = sqlContext.read.parquet("/user/cloudera/problem3/parquet")
+val lteredData = dataFile.filter("order_status like '%PENDING%'")
+lteredData.toJSON.rdd.saveAsTextFile("/user/cloudera/problem3/orders_pending1",classOf[org.apache.hadoop.io.compress.GzipCodec])
+
+----
+mysol:
+val ord = spark.read.parquet("/user/cloudera/problem3/parquet").filter("order_status like 'PENDING%'")
+ord.write.option("compression","gzip").json("/user/cloudera/problem3/orders_pending")
+=========================================================================
+
+Question 8:
+PreRequiste:[Prerequisite section will not be there in actual exam]
+
+Run below sqoop command
+
+sqoop import --connect "jdbc:mysql://localhost/retail_db" --password cloudera --username root --table customers    --columns "customer_id,customer_fname,customer_city"  --target-dir /user/cloudera/problem8/customer-avro --as-avrodatafile
+
+
+
+Instructions:
+
+Create a metastore table from avro files provided at below location.
+
+Input folder is  /user/cloudera/problem8/customer-avro
+
+
+Output Requirement:
+
+Table name should be customer_parquet_avro
+
+output location for hive data /user/cloudera/problem8/customer-parquet-hive
+
+Output file should be saved in parquet format using GZIP compression.
+
+
+
+[You will not be provided with any answer choice in actual exam.Below answers are just provided to guide you]
+
+If you are not able to see the compressions in file name, to check  compression of generated parquet files, use parquet tools
+
+parquet-tools meta hdfs://quickstart.cloudera:8020/user/cloudera/problem8/customer-parquet-hive/000000_0
+
+
+=======================================================================================
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root --table customers \
+--columns "customer_id,customer_fname,customer_city"  \
+--target-dir /user/cloudera/problem8/customer-avro \
+--as-avrodatafile
+===========================================================================
+Approach1
+import com.databricks.spark.avro._
+val sqlContext = new org.apache.spark.sql.SQLContext(sc)
+val hiveContext = new org.apache.spark.sql.hive.HiveContext(sc)
+val avroDF = sqlContext.read.avro("/user/cloudera/problem8/customer-avro")
+sqlContext.setConf("spark.sql.parquet.compression.codec","gzip")
+avroDF.write.mode("overwrite").parquet("/user/cloudera/problem8/customer-parquet-hive1")
+hiveContext.sql("CREATE EXTERNAL TABLE customer_parquet_avro1 (customer_id int,customer_fname string,customer_city string) STORED AS PARQUET LOCATION '/user/cloudera/problem8/customer-parquet-hive1'")
+
+--------------
+Approach2
+Step1: Shell
+avro-tools getschema hdfs://cloudera@quickstart:8020/user/cloudera/problem8/customer-avro/part-m-00000.avro > cust-avro.avsc
+
+step2: Hive Shell
+CREATE EXTERNAL TABLE customer_avro_new (custId int,fname string,city string) STORED AS AVRO LOCATION '/user/cloudera/problem8/customer-avro' TBLPROPERTIES('avro.schema.url'='file:///home/cloudera/cust-avro.avsc');
+
+SET hive.exec.compress.output=true;
+
+CREATE TABLE customer_parquet_avro2 STORED AS PARQUET LOCATION '/user/cloudera/problem8/customer-parquet-hive2' TBLPROPERTIES('parquet.compression'='GZIP') AS SELECT * FROM customer_avro_new;
+
+------------------
+mysol:
+val ip_df = spark.read.avro("/user/cloudera/problem8/customer-avro")
+
+ip_df.write.options(Map("format" -> "parquet", "compression" -> "gzip", "path" -> "/user/cloudera/problem8/customer-parquet-hive")).saveAsTable("customer_parquet_avro")
+
+parquet-tools meta hdfs://quickstart.cloudera:8020/user/cloudera/problem8/customer-parquet-hive/part-00000-c6b26360-39e9-4123-83c7-8f1d2962f1eb-c000.gz.parquet
+===============================================================================
