@@ -1,0 +1,8 @@
+========
+sqoop
+========
+1. if no directories are specified in sqoop import - it will take HDFS_HOME of present user.
+========
+spark
+========
+1. 

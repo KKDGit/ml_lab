@@ -1,7 +1,0 @@
-check compression
-check termination
-check file types
-how to put options for field delimiters and line delimiters..while reading or writing in spark.read//spark,write
-codecs in spark1.6 and 2.3
-parquet-tools and avro-tools
-setting compression codes in hive.. and creating tables in hive...in different formats

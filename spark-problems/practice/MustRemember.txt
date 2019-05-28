@@ -1,0 +1,81 @@
+Cloudera Paths
+========================
+/etc/hadoop/conf/*
+
+yarn-site.xml
+<property>
+    <name>yarn.resourcemanager.webapp.address</name>
+    <value>quickstart.cloudera:8088</value>
+</property>
+
+hdfs-site.xml
+
+<property>
+    <name>dfs.namenode.http-address</name>
+    <value>quickstart.cloudera:50070</value>
+</property>
+<property>
+    <name>dfs.replication</name>
+    <value>1</value>
+</property>
+<property>
+    <name>dfs.blocksize</name>
+    <value>134217728</value>
+</property>
+
+core-site.xml
+<property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://quickstart.cloudera:8020</value>
+</property>
+<property>
+    <name>io.compression.codecs</name>
+    <value>
+	org.apache.hadoop.io.compress.DefaultCodec,
+	org.apache.hadoop.io.compress.GzipCodec,
+	org.apache.hadoop.io.compress.BZip2Codec,
+	org.apache.hadoop.io.compress.DeflateCodec,
+	org.apache.hadoop.io.compress.SnappyCodec,
+	org.apache.hadoop.io.compress.Lz4Codec
+	</value>
+ </property>
+
+HDFS
+===========================
+hadoop fs -cat /user/cloudera/data_prep/crime/* | head
+
+
+Sqoop and Mysql
+=============================================================
+1.
+val mysql_driver = "com.mysql.jdbc.Driver"
+
+
+=============================================================
+
+Spark
+============================================================
+1.
+spark-shell \
+--packages com.databricks:spark-avro_2.11:4.0.0,mysql:mysql-connector-java:5.1.6 \
+--master yarn \
+--conf spark.ui.port=22222 \
+--num-executors 4 \
+--executor-cores 2 \
+--executor-memory 3G 
+
+2.
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
+import org.apache.hadoop.io._
+import org.apache.hadoop.io.LongWritable
+import org.apache.hadoop.io.Text
+import org.apache.hadoop.conf.Configuration
+
+import org.apache.spark.sql.catalyst.ScalaReflection
+val my_schema = ScalaReflection.schemaFor[Product].dataType.asInstanceOf[StructType]
+
+Spark Streaming
+========================================================
+1.
+https://spark.apache.org/docs/2.3.0/streaming-flume-integration.html
+=========================================================

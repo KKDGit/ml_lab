@@ -1,0 +1,151 @@
+export HDFS_DP=/user/cloudera/data_prep
+
+wget http://gw02.itversity.com:8000/user/kranthidr/view/data/nyse.zip
+#-------------------------------------------
+#TSS-Spark
+#Q2
+#------------------------------
+
+sqoop import --connect jdbc:mysql://quickstart.cloudera/retail_db \
+--password cloudera --username root --table orders \
+--as-avrodatafile --target-dir $HDFS_DP/retail_db/orders_avro
+
+Instructions:
+#-------------------------------------------
+#TSS-Spark
+#Q3
+#------------------------------
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root \
+--table customers  --columns "customer_id,customer_fname,customer_lname" \
+--as-avrodatafile --target-dir $HDFS_DP/retail_db/customer_part_avro 
+
+#-------------------------------------------
+#TSS-Spark
+#Q4
+#------------------------------
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root --table orders \
+--as-parquetfile --target-dir $HDFS_DP/retail_db/orders_parquet
+#-------------------------------------------
+#TSS-Spark
+#Q5
+#------------------------------
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root --table customers \
+--columns "customer_id,customer_fname,customer_city"  \
+--target-dir $HDFS_DP/retail_db/customer_part2_avro \
+--as-avrodatafile
+#------------------------------
+#DA-Spark
+#Q1 Q1A
+#------------------------------------------------------
+#Download and place it in <HDFS_HOME>/DA_SPARK/question1/input
+#----------------------------------------------------
+
+wget --output-document crime.csv https://data.cityofchicago.org/api/views/ijzp-q8t2/rows.csv?accessType=DOWNLOAD
+hadoop fs -mkdir -p $HDFS_DP/crime 
+hadoop fs -put crime.csv $HDFS_DP/crime
+
+#hadoop fs -ls -h $HDFS_DP/crime
+
+#-------------------------------------------
+#DA-Spark
+#Q2
+#------------------------------
+sqoop import-all-tables \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username root --password cloudera \
+--warehouse-dir $HDFS_DP/retail_db --num-mappers 1 \
+--fields-terminated-by ","
+#-------------------------------------------
+#DA-Spark
+#Q3
+#------------------------------
+wget http://gw02.itversity.com:8000/user/kranthidr/view/data/cca175/part-m-00000
+hadoop fs -mkdir -p $HDFS_DP/randomtextwriter
+hadoop fs -put part-m-00000 $HDFS_DP/randomtextwriter/
+#-------------------------------------------
+#DA-Spark
+#Q4
+#------------------------------
+hive -e create database retail_db_txt location '$HDFS_DP/retail_db_txt'
+
+sqoop import-all-tables \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username root --password cloudera \
+--hive-import --create-hive-table \
+--hive-database retail_db_txt
+#-------------------------------------------
+#DA-Spark
+#Q5
+#------------------------------
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--username root --password cloudera --table customers \
+--target-dir $HDFS_DP/retail_db/customers_3cols --columns "customer_id,customer_fname,customer_lname"
+#-------------------------------------------
+#DA-Spark
+#Q6
+#------------------------------
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root --table customers \
+--columns "customer_id,customer_fname,customer_city"  \
+--target-dir $HDFS_DP/retail_db/customer_part_parquet --as-parquetfile
+#-------------------------------------------
+#DA-Spark
+#Q7
+#------------------------------
+sqoop import --connect "jdbc:mysql://localhost/retail_db" \
+--password cloudera --username root --table customers \
+--fields-terminated-by '\t' \
+--columns "customer_id,customer_fname,customer_city"  \
+--target-dir $HDFS_DP/retail_db/customer_part_text_tab
+
+#-------------------------------------------
+#DA-Spark
+#Q8 Q12
+#------------------------------
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--username root --password cloudera \
+--table products \
+--hive-import \
+--create-hive-table \
+--hive-database retail_db_txt \
+--hive-table product_replica -m 1
+#-------------------------------------------
+#DA-Spark
+#Q9
+#------------------------------
+
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root --table orders \
+--fields-terminated-by "\t" --target-dir $HDFS_DP/retail_db/orders_tab
+
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root --table order_items \
+--fields-terminated-by "\t" --target-dir $HDFS_DP/retail_db/order_items_tab
+
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root --table customers \
+--fields-terminated-by "\t" \
+--target-dir $HDFS_DP/retail_db/customers_tab
+
+#-------------------------------------------
+#DA-Spark
+#Q10
+#------------------------------
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--username root --password cloudera --table customers \
+--hive-import --create-hive-table --hive-table customers_hive \
+--hive-database retail_db_txt
+#For Hive import there is no need to specify --warehouse-dir ...it will not be used
+
+#-------------------------------------------
+#DA-Spark
+#Q11
+#------------------------------
+sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
+--password cloudera --username root --table customers  \
+--target-dir $HDFS_DP/retail_db/customers_part2_tab \
+--fields-terminated-by "\t" --columns "customer_id,customer_fname,customer_state"
+

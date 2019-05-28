@@ -1,0 +1,207 @@
+============================================================
+Linux
+============================================================
+hostname/hostname -f
+hostname --help
+ls -ltrh <folder>
+
+
+
+HDFS
+===========
+avro-tools getmeta hdfs://quickstart.cloudera:8020/user/cloudera/arun/problem1/orders/part-m-00000.avro
+
+hadoop fs -cat /user/cloudera/arun/problem1/result4a-csv/* | wc -l
+hadoop fs -cat /user/cloudera/arun/problem1/result4a-csv/* | head
+
+parquet-tools head -n 10 hdfs://quickstart.cloudera:8020/user/cloudera/arun/problem1/result4a-snappy/part-00009-c2b3e475-5e3f-42d7-9627-94f6e4342733-c000.snappy.parquet
+
+parquet-tools meta hdfs://quickstart.cloudera:8020/user/cloudera/arun/problem1/result4a-snappy/part-00009-c2b3e475-5e3f-42d7-9627-94f6e4342733-c000.snappy.parquet
+
+hadoop fs -chmod -R 765 /user/kranthidr/arun/problem2/products
+
+Spark
+==================
+------------------
+MySql Connection
+------------------
+mysql:mysql-connector-java:5.1.6
+
+val mysql_url = "jdbc:mysql://ms.itversity.com/retail_db"
+val mysql_driver = "com.mysql.jdbc.Driver"
+val mysql_dbtable = "categories"
+val mysql_user = "retail_user"
+val mysql_password = "itversity"
+val options = Map("driver" -> mysql_driver,"url" -> mysql_url, "dbtable" -> mysql_dbtable, "user" -> mysql_user, "password" -> mysql_password)
+val df = spark.read.options(options).format("jdbc").load()
+----------------
+Nulls Handling
+----------------
+val cols = df.columns.map(c => count(when(col(c).isNull, c)).as("cn_"+c))
+df.select(cols:_*).show(false)
+
+------------------------------------------
+DATES Handling -- Use String Manipulation
+------------------------------------------
+val date = concat(substring('Date, 7, 4), lit("-"), substring('Date, 1, 2)).as("month")
+val joined = r_joined.withColumn("date", date_format(from_unixtime(('order_date/1000).cast(IntegerType)),"yyyy-MM-dd"))
+---------------------------------------------
+Reading
+---------------------------------------------
+Note: use --package com.databricks:spark-avro_2.11:4.0.0,mysql:mysql-connector-java:5.1.6 for spark2-shell
+Note: check whether it has schema, for csv check the header, many formats come with schema, excpet text files
+1. From local source 
+import scala.io.Source._
+rdd -> sc.parallalize(fromFile("").getlines.toList)
+rdd -> map and get the fields in desired format --> toDF using desired columns
+
+2. From HDFS
+A. TextFile with no format ---> use textFile("/*") --> rdd
+B. read --> DataFrame --> rdd --> map -> cast --> --> df with columns --> if numerical caluculations
+C. read --> DataFrame --> give column names and select --> if no numeric columns are involved
+
+----When Schema is important for output---------
+case class Product(product_id:Int, 
+product_category_id:Int, 
+product_name:String, 
+product_description:String,
+product_price:Float, 
+product_image:String)
+
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.catalyst.ScalaReflection
+
+
+val my_schema = ScalaReflection.schemaFor[Product].dataType.asInstanceOf[StructType]
+val products = spark.read.schema(my_schema).option("delimiter", "|").csv()
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+------------how to read # lin-delimited--------
+val ip3 = spark.read.csv("/user/kranthidr/arun/problem5/prod_text_pipestar").toDF("part")
+val ip4 = ip3.select(explode(split('part,"#")).as("value"))
+val ip5 = ip4.select(split('value,"\\|").as("cols")).select('cols(0),'cols(1),'cols(2))
+
+val cols = ip5.columns.map(c => count(when(col(c).isNull, 1)).alias("cn_"+c))
+ip5.select(cols:_*).show(false)
+ip5.na.drop().count()
+----------------------------------
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
+import org.apache.hadoop.io.LongWritable
+import org.apache.hadoop.io.Text
+import org.apache.hadoop.conf.Configuration
+
+val conf = new Configuration
+conf.set("textinputformat.record.delimiter", "#")
+
+val log_df = sc.newAPIHadoopFile(
+"/user/kranthidr/arun/problem5/prod_text_pipestar", 
+classOf[TextInputFormat], 
+classOf[LongWritable], 
+classOf[Text], 
+conf
+).map(_._2.toString)
+
+log_df.map(x => x.split("\\|")).map(x => 
+(x(0).toInt, x(1).toInt, x(2).toFloat)).
+toDF("product_id,product_category_id,product_price".split(","):_*).show()
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+----------------------------------------------------------------------------
+-----------------------
+Spark-Logic
+-------------------
+val big_day = ords.groupBy('date).agg(countDistinct('order_id).as("count")).orderBy('count.desc).select("date").limit(1).collect()(0)(0).toString
+-------------------
+spark.sql("use kkd_problem3")
+
+spark.sql("DROP TABLE IF EXISTS orders_avro1")
+
+spark.sql("CREATE TABLE orders_avro1 (order_id int, order_date bigint, order_customer_id int, order_status string) partitioned by (order_month string) stored as avro")
+
+val orders = spark.sql("select * from kkd_orders_sqoop")
+val ords = orders.drop("order_style", "order_zone").withColumn("order_month", date_format(from_unixtime('order_date/1000),"yyyy-MM"))
+
+spark.conf.set("hive.exec.dynamic.partition", "true")
+spark.conf.set("hive.exec.dynamic.partition.mode","nonstrict")
+ords.write.insertInto("kkd_problem3.orders_avro1")
+--------------------------
+Writing
+--------------------------
+1. Use write DF for all operations
+2. for text file --> df --> rdd --> map(_.mkString).toDF() --> write OR
+
+orders_avro.select(concat_ws(",", orders_avro.columns.map(col(_)):_* )).
+write.option("compression", "gzip").text("/user/kranthidr/arun/problem4/text-gzip-compress")
+
+3. use saveAsObjectFile for rdd to write sequence File
+orders_avro.rdd.saveAsObjectFile("/user/kranthidr/arun/problem4/object")
+val obj_rdd = sc.objectFile[org.apache.spark.sql.Row]("/user/kranthidr/arun/problem4/object")
+val obj1_rdd = sc.objectFile[org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema]("/user/kranthidr/arun/problem4/object")
+val obj_df = obj_rdd.map(_.toString).toDF()
+val obj1_df = obj1_rdd.map(_.toString).toDF()
+
+4. use saveAsSequenceFile for pairedRDD to write sequence File
+
+orders_avro.rdd.map(x=> (x(0).toString,x(0)+"\t"+x(1)+"\t"+x(2)+"\t"+x(3))).saveAsSequenceFile("/user/kranthidr/arun/problem4/sequence1")
+val seq = sc.sequenceFile("/user/kranthidr/arun/problem4/sequence1",classOf[org.apache.hadoop.io.Text],classOf[org.apache.hadoop.io.Text])
+val seq_df =  seq.map(x=>{ val d = x._2.toString.split("\t") (d(0),d(1),d(2),d(3))}).toDF()
+
+5. Do not use spark spark.conf.set("spark.sql.shuffle.partitions", 10) when using 
+coalesce() to limit files generated to write. Use repartition when coalesce is not working
+
+============================
+Hive
+==============================
+avro-tools getschema 'hdfs://nn01.itversity.com:8020/user/kranthidr/arun/problem3/retail_stage.db/orders/part-m-00000.avro' > orders.avsc
+hadoop fs -put orders.avsc /user/kranthidr/arun/problem3/retail_stage.db/orders.avsc
+
+create database kkd_problem3 location '/user/kranthidr/arun/kkd_problem3';
+use kkd_problem3;
+CREATE EXTERNAL TABLE kkd_orders_sqoop
+STORED AS AVRO
+LOCATION '/user/kranthidr/arun/problem3/retail_stage.db/orders'
+TBLPROPERTIES ('avro.schema.url'='/user/kranthidr/arun/problem3/retail_stage.db/orders.avsc');
+
+---------
+create table orders_avro (order_id int, order_date bigint, order_customer_id int, order_status string) partitioned by (order_month string) stored as avro;
+set hive.exec.dynamic.partition.mode=nonstrict;
+insert overwrite table orders_avro partition(order_month) 
+select order_id, order_date, order_customer_id, order_status, 
+substr(from_unixtime(cast(order_date/1000 as int)),1,7) as order_month  
+from kkd_orders_sqoop;
+
+
+============================================================
+Sqoop
+============================================================
+sqoop help <command>
+sqoop list-databases/list-tables/eval/import/export/import-all-tables/merge/job
+--target-dir and --warehouse-dir
+--delete-target-dir and --append
+--autoreset-to-one-mapper --> use this if there is no primary key and if --split-by is not used
+--split-by and if text colum-Dorg.apache.sqoop.splitter.allow_text_splitter=true
+
+----------------------------------
+
+sqoop job --delete hive_import_products_incr
+
+sqoop job --create hive_import_products_incr -- import \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export --username retail_user --password itversity \
+--table kkd_products_replica \
+--hive-import --hive-database kkd_problem5 --hive-table products_hive \
+--check-column product_id \
+--incremental append \
+--last-value 0 \
+--null-string '\\N' \
+--null-non-string '\\N'
+
+sqoop job --create hive_export_products_incr -- export \
+--connect jdbc:mysql://ms.itversity.com:3306/retail_export --username retail_user --password itversity \
+--table kkd_products_external \
+--hcatalog-database kkd_problem5  --hcatalog-table products_hive \
+--update-key product_id \
+--update-mode allowinsert
+
+// --update-mode has two option allowinsert- it will not insert if record is not there... updateonly -- only updates 
+
+sqoop job --exec hive_export_products_incr
+
+===============================

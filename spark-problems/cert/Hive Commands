@@ -1,5 +1,0 @@
-Hive Commands
-1. SHOW DATABASES LIKE 'kranth*';
-2. describe formatted user_sessions;
-3. How to get help from HIVE Command line ??
-4. describe functions extended <fun_name>
