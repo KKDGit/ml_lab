@@ -53,14 +53,14 @@ val ip3 = spark.read.csv("/user/kranthidr/arun/problem5/prod_text_pipestar").toD
 val ip4 = ip3.select(explode(split('part,"#")).as("value"))
 val ip5 = ip4.select(split('value,"\\|").as("cols")).select('cols(0),'cols(1),'cols(2))
 
-val cols = ip5.columns.map(c => count(when(col(c).isNull, c)).alias("cn_"+c))
+val cols = ip5.columns.map(c => count(when(col(c).isNull, 1)).alias("cn_"+c))
 ip5.select(cols:_*).show(false)
 ip5.na.drop().count()
 ----------------------------------
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.hadoop.io.LongWritable
 import org.apache.hadoop.io.Text
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 
 val conf = new Configuration
 conf.set("textinputformat.record.delimiter", "#")
@@ -121,13 +121,16 @@ Using sqoop merge data available in /user/cloudera/problem5/products-text-part1 
 sqoop codegen \
 --connect jdbc:mysql://ms.itversity.com:3306/retail_export --username retail_user --password itversity \
 --table kkd_products_replica \
---outdir /home/kranthidr/arun
+--outdir /home/kranthidr/arun 
+
 
 sqoop merge \
 --new-data /user/kranthidr/arun/problem5/products-text-part2 \
 --onto /user/kranthidr/arun/problem5/products-text-part1 \
 --merge-key product_id \
---target-dir /user/kranthidr/arun/problem5/products-text-both-parts
+--target-dir /user/kranthidr/arun/problem5/products-text-both-parts \
+--class-name kkd_products_replica \
+--jar-file /tmp/sqoop-kranthidr/compile/cb8dcc5df8803cd2aaecfc78646075b8/kkd_products_replica.jar
 
 5.
 Using sqoop do the following. Read the entire steps before you create the sqoop job.
@@ -162,12 +165,8 @@ sqoop job --exec import_products_incr
 
 mysql> insert into kkd_products_replica values (1350,4,'something 1376','something 2',1.00,'not avaialble',3,'WEAK');
 mysql> insert into kkd_products_replica values (1351,4,'something 1376','something 2',10.00,'not avaialble',null,'NOT APPLICABLE');
-above will not work
+above will not work+++++++++++++
 
-Go to your pwd
-cd .sqoop
-open file metastore.db.script using vi or your fav editor.
-search for incremental.last.value
 
 6.
 Using sqoop do the following. Read the entire steps before you create the sqoop job.

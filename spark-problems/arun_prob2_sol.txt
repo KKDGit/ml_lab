@@ -73,7 +73,7 @@ val avg_price_categ = products.groupBy('product_category_id).avg("product_price"
 
 val min_priced_categ = products.groupBy('product_category_id).min("product_price")
 
-val cat_analysis = products.groupBy('product_category_id).agg(countDistinct("product_id").as("count"), max("product_price").as("max_price"),  avg("product_price").as("avg_price"), min("product_price").as("min_price"))
+val cat_analysis = products.groupBy('product_category_id).agg(countDistinct("product_id").as("count"), max("product_price").as("max_price"),  avg("product_price").as("avg_price"), min("product_price").as("min_price")).orderBy('product_category_id)
 
 cat_analysis.write.mode("overwrite").option("compression", "snappy").avro("/user/kranthidr/arun/problem2/result-df")
 

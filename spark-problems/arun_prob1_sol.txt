@@ -17,7 +17,7 @@ sqoop import \
 --compression-codec snappy \
 --as-avrodatafile
 /*
-compression-codec snappy ----seems working
+compression-codec snappy ---- seems working
 */
 2.
 sqoop import \
@@ -52,7 +52,7 @@ sqoop export \
 --table kkd_result \
 --columns 'order_date,order_status,total_orders,total_amount' \
 --export-dir '/user/kranthidr/arun/problem1/result4a-csv'
-
+//defalut format is csv ","... so no need to give other options
 ====================================================================================
 /*
 3. Using Spark Scala load data at /user/cloudera/problem1/orders and /user/cloudera/problem1/orders-items items as dataframes. 

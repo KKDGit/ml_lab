@@ -11,7 +11,9 @@ sqoop import-all-tables \
 --num-mappers 1
 
 2.
-Create a metastore table that should point to the orders data imported by sqoop job above. Name the table orders_sqoop.
+Create a metastore table that should point to the orders data imported by sqoop job above. 
+
+Name the table orders_sqoop.
 
 avro-tools getschema 'hdfs://nn01.itversity.com:8020/user/kranthidr/arun/problem3/retail_stage.db/orders/part-m-00000.avro' > orders.avsc
 
@@ -41,7 +43,7 @@ select data from orders_sqoop.
 spark.sql("use kkd_problem3")
 val orders = spark.sql("select * from kkd_orders_sqoop")
 //val ords = orders.withColumn("date", to_date(to_timestamp('order_date/1000)))
-//val ords = orders.withColumn("date", to_date(from_unixtime('order_date/1000)))
+val ords = orders.withColumn("date", to_date(from_unixtime('order_date/1000)))
 //both are same
 
 val big_day = ords.groupBy('date).agg(countDistinct('order_id).as("count")).orderBy('count.desc).select("date").limit(1).collect()(0)(0).toString
@@ -77,12 +79,13 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 insert overwrite table orders_avro partition(order_month) select order_id, order_date, order_customer_id, order_status, substr(from_unixtime(cast(order_date/1000 as int)),1,7) as order_month  from kkd_orders_sqoop;
 
 ------------------
-spark.sql("use kkd_problem3")
-val orders = spark.sql("select * from kkd_orders_sqoop")
-val ords = orders.withColumn("order_month", date_format(from_unixtime('order_date/1000),"yyyy-MM"))
-ords.write.mode("overwrite").format("avro").partitionBy("order_month").saveAsTable("orders_avro1")
-//Not able to read from Hive but can be read from Spark
+//spark.sql("use kkd_problem3")
+//val orders = spark.sql("select * from kkd_orders_sqoop")
+//val ords = orders.withColumn("order_month", date_format(from_unixtime('order_date/1000),"yyyy-MM"))
 
+//ords.write.mode("overwrite").format("avro").partitionBy("order_month").saveAsTable("orders_avro1")
+//Not able to read from Hive but can be read from Spark
+//DO NOT USE THIS
 -------------------------------------------------------
 spark.sql("use kkd_problem3")
 
@@ -91,8 +94,9 @@ spark.sql("DROP TABLE IF EXISTS orders_avro1")
 spark.sql("CREATE TABLE orders_avro1 (order_id int, order_date bigint, order_customer_id int, order_status string) partitioned by (order_month string) stored as avro")
 
 val orders = spark.sql("select * from kkd_orders_sqoop")
-val ords = orders.withColumn("order_month", date_format(from_unixtime('order_date/1000),"yyyy-MM"))
+val ords = orders.drop("order_style", "order_zone").withColumn("order_month", date_format(from_unixtime('order_date/1000),"yyyy-MM"))
 
+spark.conf.set("hive.exec.dynamic.partition", "true")
 spark.conf.set("hive.exec.dynamic.partition.mode","nonstrict")
 ords.write.insertInto("kkd_problem3.orders_avro1")
 -------------------------------------------------------------------------
