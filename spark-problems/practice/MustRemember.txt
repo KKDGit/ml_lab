@@ -49,10 +49,12 @@ Sqoop and Mysql
 =============================================================
 1.
 val mysql_driver = "com.mysql.jdbc.Driver"
-
+2.
+val jdbc_url = jdbc:mysql://gateway:3306/retail_db 
+3.
+mysql --host=ms.itversity.com --port=3306 --user=retail_user --password=itversity
 
 =============================================================
-
 Spark
 ============================================================
 1.
