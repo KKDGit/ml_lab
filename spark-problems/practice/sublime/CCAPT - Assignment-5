@@ -1,0 +1,129 @@
+/user/cloudera/data_prep/it/nyse_all/nyse_stocks  - |
+/user/cloudera/data_prep/it/nyse_all/nyse_data - ,
+
+/user/cloudera/spark_practice/problem1/data/nyse_count - 1 file - daily count
+
+stockticker, tradedate, openprice, highprice, lowprice, closeprice, volume
+
+1.
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+
+val nyse = spark.read.csv("/user/cloudera/data_prep/it/nyse_all/nyse_data").toDF("stockticker, tradedate, openprice, highprice, lowprice, closeprice, volume".split(",").map(_.trim()):_*).cache()
+
+nyse.show()
+
+val daily_count = nyse.groupBy("tradedate").agg(count(lit(1)))
+
+daily_count.coalesce(1).write.csv("/user/cloudera/spark_practice/problem1/data/nyse_count")
+
+2.
+///user/cloudera/spark_practice/problem2/data/unique_stocks
+
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+
+val nyse = spark.read.csv("/user/cloudera/data_prep/it/nyse_all/nyse_data").toDF("stockticker, tradedate, openprice, highprice, lowprice, closeprice, volume".split(",").map(_.trim()):_*).cache()
+
+nyse.show()
+
+val ut = nyse.where(substring('tradedate, 0,4) === "2010").select("stockticker").distinct()
+
+ut.coalesce(1).write.mode("overwrite").text("/user/cloudera/spark_practice/problem2/data/unique_stocks")
+
+
+3.
+
+///user/cloudera/spark_practice/problem3/data/nyse_data_json
+
+val nyse = spark.read.csv("/user/cloudera/data_prep/it/nyse_all/nyse_data").toDF("stockticker, tradedate, openprice, highprice, lowprice, closeprice, volume".split(",").map(_.trim()):_*).cache()
+
+nyse.show()
+
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
+
+val nyse_tc = nyse.select('stockticker, unix_timestamp('tradedate,"YYYYmmdd").as("tradedate"), 'openprice.cast(FloatType), 'highprice.cast(FloatType), 'lowprice.cast(FloatType), 'closeprice.cast(FloatType), 'volume.cast(DoubleType)).orderBy('tradedate.asc, 'stockticker.asc)
+
+nyse_tc.show()
+
+nyse_tc.coalesce(8).write.mode("overwrite").json("/user/cloudera/spark_practice/problem3/data/nyse_data_json")
+
+4.
+///user/`whoami`/spark_practice/problem4/data/no_stock_names
+
+val nyse = spark.read.csv("/user/cloudera/data_prep/it/nyse_all/nyse_data").toDF("stockticker, tradedate, openprice, highprice, lowprice, closeprice, volume".split(",").map(_.trim()):_*).cache()
+
+val names = spark.read.option("sep", "|").csv("/user/cloudera/data_prep/it/nyse_all/nyse_stocks").select("_c0","_c1").toDF("stockticker","stockname")
+
+val joined = nyse.select('stockticker).distinct().join(names, nyse.col("stockticker") === names.col("stockticker"), "left_anti").orderBy('stockticker.asc)
+
+joined.coalesce(1).write.mode("overwrite").text("/user/cloudera/spark_practice/problem4/data/no_stock_names")
+
+
+5.
+
+///user/`whoami`/spark_practice/problem5/data/untraded_stocks
+
+val nyse = spark.read.csv("/user/cloudera/data_prep/it/nyse_all/nyse_data").toDF("stockticker, tradedate, openprice, highprice, lowprice, closeprice, volume".split(",").map(_.trim()):_*).select('stockticker).distinct().cache()
+
+val names = spark.read.option("sep", "|").csv("/user/cloudera/data_prep/it/nyse_all/nyse_stocks").select("_c0","_c1").toDF("stockticker","stockname")
+
+val joined = names.join(nyse, nyse.col("stockticker") === names.col("stockticker"), "left_anti").select("stockname").orderBy('stockname.asc)
+
+joined.coalesce(1).write.mode("overwrite").text("/user/cloudera/spark_practice/problem5/data/untraded_stocks")
+
+
+
+6.
+
+val nyse = spark.read.csv("/user/cloudera/data_prep/it/nyse_all/nyse_data").toDF("stockticker, tradedate, openprice, highprice, lowprice, closeprice, volume".split(",").map(_.trim()):_*).cache()
+
+val names = spark.read.option("sep", "|").csv("/user/cloudera/data_prep/it/nyse_all/nyse_stocks").select("_c0","_c1").toDF("stockticker","stockname")
+
+val joined = nyse.join(names, nyse.col("stockticker") === names.col("stockticker"), "left_outer").drop(names.col("stockticker")).na.fill("Stock Name Not Available").selectExpr("stockticker,tradedate,openprice,highprice,lowprice,closeprice,volume,stockname".split(","):_*).orderBy('tradedate.asc, 'stockticker.asc)
+
+joined.map(_.mkString(";")).coalesce(8).write.mode("overwrite").text("/user/cloudera/spark_practice/problem6/data/stock_data_with_names")
+
+7.
+/*
+case class Orders(order_id:Int, order_date:String, order_customer_id:Int, order_status:String)
+
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.types._
+val my_schema = ScalaReflection.schemaFor[Orders].dataType.asInstanceOf[StructType]
+
+val ords = spark.read.schema(my_schema).csv("/user/cloudera/data_prep/it/retail_db/orders")
+ords.printSchema
+ords.show()
+
+THIS IS WORKING
+*/
+
+/*
+case class Nyse(stockticker:Int, tradedate:String, openprice:Float, highprice:Float, lowprice:Float, closeprice:Float, volume:Double)
+
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.types._
+
+val my_schema = ScalaReflection.schemaFor[Nyse].dataType.asInstanceOf[StructType]
+
+val nyse = spark.read.schema(my_schema).csv("/user/cloudera/data_prep/it/nyse_all/nyse_data")
+THIS IS NOT WORKING
+
+*/
+
+val nyse = spark.read.csv("/user/cloudera/data_prep/it/nyse_all/nyse_data").toDF("stockticker, tradedate, openprice, highprice, lowprice, closeprice, volume".split(",").map(_.trim()):_*).cache()
+
+import org.apache.spark.sql.types._
+val nyse_tc = nyse.select('stockticker, unix_timestamp('tradedate,"YYYYmmdd").as("tradedate"), 'openprice.cast(FloatType), 'highprice.cast(FloatType), 'lowprice.cast(FloatType), 'closeprice.cast(FloatType), 'volume.cast(DoubleType))
+
+val sorted = nyse_tc.orderBy('tradedate.asc, 'volume.desc).coalesce(4)
+
+sorted.count()
+
+sorted.createOrReplaceTempView("sorted")
+
+spark.sql("create database if not exists spark_practice")
+spark.sql("use spark_practice")
+spark.sql("drop table if exists nyse_data_avro")
+spark.sql("create table nyse_data_avro stored as avro as select * from sorted")
+//9384739 -- how to make 4 files ??

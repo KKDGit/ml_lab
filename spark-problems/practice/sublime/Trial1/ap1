@@ -1,0 +1,43 @@
+prob1
+----------
+hadoop fs -mkdir -p /user/cloudera/arun/problem1
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username root --password cloudera --table orders \
+--target-dir  /user/cloudera/arun/problem1/orders \
+--as-avrodatafile \
+--compress -compression-codec snappy
+
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username root --password cloudera --table order_items \
+--target-dir  /user/cloudera/arun/problem1/order-items \
+--as-avrodatafile \
+--compress -compression-codec snappy
+
+import com.databricks.spark.avro._
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+val r_ords = spark.read.avro("/user/cloudera/arun/problem1/orders")
+val r_oitems = spark.read.avro("/user/cloudera/arun/problem1/order-items")
+val r_joined = r_ords.join(r_oitems, 'order_id==='order_item_order_id).cache()
+val joined = r_joined.withColumn("date", date_format(from_unixtime(('order_date/1000).cast(IntegerType)),"yyyy-MM-dd"))
+val sel = joined.select($"date".as("order_date"), 'order_status, 'order_id, 'order_item_subtotal)
+val op = sel.groupBy("order_date", "order_status").agg(countDistinct('order_id).as("total_orders"), sum("order_item_subtotal").as("total_amount")).orderBy('order_date.desc, 'order_status.asc, 'total_amount.desc, 'total_orders.asc)
+
+op.write.option("compression","gzip").parquet("/user/cloudera/arun/problem1/result4a-gzip")
+
+op.write.mode("overwrite").option("compression","snappy").parquet("/user/cloudera/arun/problem1/result4a-snappy")
+
+op.write.csv("/user/cloudera/arun/problem1/result4a-csv")
+
+
+create table result(order_date varchar(50), order_status varchar(50), total_orders long, total_amount double);
+
+sqoop export \
+--connect jdbc:mysql://quickstart.cloudera/retail_db \
+--username root --password cloudera --table result \
+--export-dir  /user/cloudera/arun/problem1/result4a-csv \
+--input-fields-terminated-by "," \
+--columns "order_date,order_status,total_orders,total_amount"

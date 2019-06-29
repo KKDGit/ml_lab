@@ -1,0 +1,96 @@
+1.
+What is the YARN property which defines the amount of memory allocated on each node for container?
+A.
+yarn.nodemanager.resource.memory-mb - Amount of physical memory, in MB, that can be allocated for containers.
+
+2.
+What are the different Spark Execution Modes that are used in Production?
+A.
+YARN and Mesos are the execution modes used in Production.
+
+3.
+How can we control the number of executors while running Spark Jobs in Static Allocation Mode?
+A.
+--num-executors is the control argument which can be used to control number of executors while submitting Spark Applications.
+
+4.
+We have Spark Cluster setup to run in YARN mode. What are the different deployment modes supported when Spark Jobs are submitted in YARN Mode?
+A.
+We can submit Spark Jobs either in client mode or cluster mode. If the job is submitted in client mode then driver program will run on the node on which job is submitted. If it submitted in cluster mode, then driver program will run on one of the worker nodes.
+
+5.
+We have Spark Cluster setup to run in YARN mode. Can we launch spark-shell using cluster mode?
+A.
+We can only launch spark-shell in client mode where the driver program will be running on gateway node. We can only use cluster mode while submitting the jobs using spark-submit.
+
+6.
+In Spark 2.x, how can we create a table or view using Data Frame? Let us assume that Data Frame name is df and table name is mytable.
+A.
+From Spark 2.x, the tables against Data Frames are considered as views. createTempView will create a view if it does not exists and fails if a view with the same name already exists, where as createOrReplaceTempView will replace existing view if it already exists in that particular context.
+
+7.
+In Spark 2.3 or later, assume there is orders data in CSV format under /public/retail_db/orders. It contains 4 fields and delimiter is ;.
+
+Column names are order_id, order_date, order_customer_id and order_status. order_id and order_customer_id are of type integers where as other two columns are of type string.
+
+How can we create Data Frame with appropriate schema?
+A.
+
+spark.
+ read.
+ format("csv").
+ option("sep", ";").
+ schema("order_id INT, order_date STRING, order_customer_id INt, order_status STRING").
+ load("/public/retail_db/orders")
+
+python
+
+spark. \
+read. \
+format("csv"). \
+option("sep", ";"). \
+schema("order_id INT, order_date STRING, order_customer_id INt, order_status STRING")
+load("/public/retail_db/orders")
+
+
+
+8.
+In Spark 2.x or later, how can we remove a field while creating new Data Frame? Let us assume that orders is a Data Frame with 4 fields - order_id, order_date, order_customer_id and order_status. We would like to create new data frame with out column order_customer_id.
+A.
+ remove and delete are not valid APIs. We can either use drop to remove a field from data frame or ignore as part of select.
+
+ 9.
+There are several actions that are available on top of Data Frames to preview the data. Identify actions from the list of APIs below - limit, show, head, count
+A.
+show, head and count are Actions where as limit is transformation which returns another Data Frame. Show returns unit, head returns array, count returns long value.
+
+10.
+Choose all the correct statements related to Data Frame packages.
+A.
+
+Scala
+org.apache.spark.sql is the base package for Data Frames
+Python
+pyspark.sql is the base package for Data Frames
+(Correct)
+Scala
+org.apache.spark.sql.functions contain all the functions that
+can be applied on Data Frame Columns.
+Python
+pyspark.sql.functions contain all the functions that can be
+applied on Data Frame Columns.
+(Correct)
+Scala
+org.apache.spark.sql.types contain all the APIs related to Data
+Types
+Python
+pyspark.sql.types contain all the APIs related to Data Types
+(Correct)
+org.apache.spark.sql.expressions contain Window,
+WindowSpec etc which can be used for window related
+functions such as partitionBy , orderBy etc.
+Python
+pyspark.sql.window contain Window, WindowSpec etc which
+can be used for window related functions such as partitionBy ,
+orderBy etc.
+(Correct)

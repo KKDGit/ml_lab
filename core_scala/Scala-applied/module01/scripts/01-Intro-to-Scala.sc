@@ -11,7 +11,8 @@ var y = 2
 
 y = y * 2
 
-// y = "four"  // also will not compile - types must be the same
+// y = "four"  // also will not compile -
+// types must be the same
 
 def add(x: Int, y: Int) = x + y
 
@@ -50,7 +51,7 @@ maxSquaredDoubled(3, 5)
 a = 15
 b = 15
 
-val divided = try {
+def divided = try {
   a / (b - 12)
 }
 catch {
@@ -60,6 +61,9 @@ finally {
   println("this is final block of divided fun")
   100
 }
+a = 15
+b = 12
+divided
 
 a = 100
 b = 12

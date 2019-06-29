@@ -1,0 +1,23 @@
+gen
+------
+spark2-shell --master yarn \
+--packages com.databricks:spark-avro_2.11:4.0.0,mysql:mysql-connector-java:5.1.6 \
+--conf spark.ui.port=4445 \
+--num-executors 10 \
+--executor-cores 2 \
+--executor-memory 3G
+
+spark2-shell --master yarn \
+--packages com.databricks:spark-avro_2.11:4.0.0,mysql:mysql-connector-java:5.1.6 \
+--conf spark.ui.port=4445 \
+--num-executors 4 \
+--executor-cores 2 \
+--executor-memory 3G
+
+spark2-shell --master yarn \
+--packages com.databricks:spark-avro_2.11:4.0.0,mysql:mysql-connector-java:5.1.6 
+
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.{spark => sprk}
+import sprk.sql.functions._
+import sprk.sql.expressions.Window

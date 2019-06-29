@@ -1,6 +1,6 @@
 export HDFS_DP=/user/cloudera/data_prep
 
-wget http://gw02.itversity.com:8000/user/kranthidr/view/data/nyse.zip
+
 #-------------------------------------------
 #TSS-Spark
 #Q2
@@ -40,9 +40,9 @@ sqoop import --connect "jdbc:mysql://quickstart.cloudera/retail_db" \
 #DA-Spark
 #Q1 Q1A
 #------------------------------------------------------
+#refer https://gist.github.com/dgadiraju/ce1ccf641911c5d6cb414a0b06b93a06
 #Download and place it in <HDFS_HOME>/DA_SPARK/question1/input
 #----------------------------------------------------
-
 wget --output-document crime.csv https://data.cityofchicago.org/api/views/ijzp-q8t2/rows.csv?accessType=DOWNLOAD
 hadoop fs -mkdir -p $HDFS_DP/crime 
 hadoop fs -put crime.csv $HDFS_DP/crime
@@ -62,7 +62,7 @@ sqoop import-all-tables \
 #DA-Spark
 #Q3
 #------------------------------
-wget http://gw02.itversity.com:8000/user/kranthidr/view/data/cca175/part-m-00000
+#refer itversity public datasets
 hadoop fs -mkdir -p $HDFS_DP/randomtextwriter
 hadoop fs -put part-m-00000 $HDFS_DP/randomtextwriter/
 #-------------------------------------------

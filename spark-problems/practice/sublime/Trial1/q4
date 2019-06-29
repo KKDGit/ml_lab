@@ -1,0 +1,36 @@
+q4
+--------
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.{spark => sprk}
+import sprk.sql.functions._
+import sprk.sql.expressions.Window
+
+spark.sql("use retail_db_txt")
+val ords = spark.sql("select * from orders").select('order_id, 'order_date, 'order_customer_id)
+val cust = spark.sql("select * from customers").cache()
+val items = spark.sql("select * from order_items").groupBy('order_item_order_id).agg(sum('order_item_subtotal).as("purchage"))
+
+ords.show()
+cust.show()
+items.show()
+
+val j_ord_itm = ords.join(items, 'order_id === 'order_item_order_id).cache()
+
+j_ord_itm.show()
+
+val op = j_ord_itm.withColumn("month",substring('order_date,1,7)).groupBy('month,'order_customer_id).agg(sum('purchage).as("revenue_per_month"))
+
+op.show()
+
+val win = Window.partitionBy('month).orderBy('revenue_per_month.desc)
+val ran = rank().over(win).as("rank")
+
+val op1 = op.select('*, ran).where("rank <= 5").orderBy('month.asc, 'revenue_per_month.desc)
+
+op1.show()
+
+val fop = op1.join(cust, 'order_customer_id === 'customer_id).drop("order_customer_id","rank")
+
+fop.write.option("path","/user/cloudera/DA_SPARK/question4/output").saveAsTable("top5_customers_per_month")
+
+fop.write.format("orc").options(Map("path"->"/user/cloudera/DA_SPARK/question4/output1","compression"->"snappy")).saveAsTable("top5_customers_per_month_orc_snappy")

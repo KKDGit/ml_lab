@@ -1,0 +1,50 @@
+CCAPT - Assignment-1
+---------------------
+Questions for this assignment
+Use Sqoop to list the databases for which retail_user have access to. Identify the system databases as well as application databases.
+
+Use Sqoop to list the tables under application database.
+
+Use the application database and run following MySQL Commands/Queries.
+
+* DESCRIBE orders
+
+* SELECT * FROM orders LIMIT 10
+
+* SELECT count(1) FROM orders
+
+* Write the query to get the count by status and run against MySQL application database using Sqoop
+
+
++++++++++++++++++++++
+
+1.
+sqoop list-databases \
+--connect jdbc:mysql://quickstart.cloudera:3306 --username root --password cloudera
+
+2.
+sqoop list-tables \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db --username root --password cloudera
+
+3.
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db --username root --password cloudera \
+--query "DESCRIBE orders"
+
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db --username root --password cloudera \
+--query "SELECT * FROM orders LIMIT 10"
+
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db --username root --password cloudera \
+--query "SELECT count(1) FROM orders"
+
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db --username root --password cloudera \
+--query "SELECT order_status, count(order_status) FROM orders group by order_status"
+
+
++++++++++++++++++++++++++++++++
+
+
+

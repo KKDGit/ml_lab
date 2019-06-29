@@ -1,0 +1,13 @@
+q8
+----
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.{spark => sprk}
+import sprk.sql.functions._
+import sprk.sql.expressions.Window
+
+val ip = spark.sql("select * from retail_db_txt.product_replica")
+ip.show()
+
+ip.where("product_price > 100").write.option("compression","gzip").parquet("/user/cloudera/DA_SPARK/question8/output")
+
+spark.read.parquet("/user/cloudera/DA_SPARK/question8/output").show()

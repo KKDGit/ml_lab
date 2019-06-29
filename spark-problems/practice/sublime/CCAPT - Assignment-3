@@ -1,0 +1,197 @@
+
+Questions for this assignment
+As our labs is multitenant environment, it is recommended to use unique database by each lab user.
+
+For that reason create database using retail_db_<YOUR_OS_USER_NAME>
+--------------------------------------------
+retail_db_kkd
+/home/cloudera/data_prep/it/retail_db/orders
+hadoop fs -mkdir -p /user/cloudera/data_prep/it
+hadoop fs -put /home/cloudera/data_prep/it/retail_db /user/cloudera/data_prep/it/
+
+spark.sql("CREATE DATABASE retail_db_kkd")
+spark.sql("USE retail_db_kkd")
+
+val ords = spark.read.csv("/user/cloudera/data_prep/it/retail_db/orders")
+ords.printSchema
+case class Orders(order_id:Int, order_date:String, order_customer_id:Int, order_status:String)
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.types._
+val my_schema = ScalaReflection.schemaFor[Orders].dataType.asInstanceOf[StructType]
+
+val ords = spark.read.schema(my_schema).csv("/user/cloudera/data_prep/it/retail_db/orders")
+ords.printSchema
+ords.show()
+/*
+seems not working
+val my_schema = "order_id Int, order_date String, order_customer_id Int, order_status String"
+val ords = spark.read.schema(my_schema).csv("/user/cloudera/data_prep/it/retail_db/orders")
+*/
+ords.createOrReplaceTempView("ords")
+spark.sql("drop table if exists orders")
+spark.sql("create table orders row format delimited fields terminated by ',' stored as textfile as select * from ords")
+++++++++++++++++++++++++
+spark.sql("USE retail_db_kkd")
+case class Items(order_item_id:Int, order_item_order_id:Int, order_item_product_id:Int, order_item_quantity:Int, order_item_subtotal:Float, order_item_product_price:Float)
+import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.types._
+val my_schema = ScalaReflection.schemaFor[Items].dataType.asInstanceOf[StructType]
+
+val itms = spark.read.schema(my_schema).csv("/user/cloudera/data_prep/it/retail_db/order_items")
+itms.printSchema
+itms.show()
+itms.write.saveAsTable("order_items_parquet_snappy")
+itms.createOrReplaceTempView("itms")
+spark.sql("drop table if exists order_items")
+spark.sql("create table order_items stored as orc as select * from itms")
+
+spark.sql("create table order_items_orc_snappy stored as orc TBLPROPERTIES('orc.compress'='SNAPPY') as select * from itms")
+
+spark.sql("create table order_items_orc_zlib stored as orc TBLPROPERTIES('orc.compress'='ZLIB') as select * from itms")
+++++++++++++++++++++++++
+spark.sql("USE retail_db_kkd")
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.spark.sql.functions._
+
+val ords = spark.sql("select * from orders").where("order_status IN('CLOSED','COMPLETE')").select(split('order_date," ")(0).as("order_date"),'order_id)
+val op = ords.groupBy('order_date).agg(countDistinct('order_id).as("order_count"))
+
+op.createOrReplaceTempView("op")
+spark.sql("create table daily_order_count stored as textfile row format delimited fields terminated by ';' as select * from op")
+++++++++++++++++++++++++++++
+
+spark.sql("USE retail_db_kkd")
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
+
+val itms = spark.sql("select * from order_items").select('order_item_order_id,'order_item_subtotal)
+
+val ords = spark.sql("select * from orders").join(itms,'order_id === 'order_item_order_id).where("order_status IN('CLOSED','COMPLETE')").select(split('order_date," ")(0).as("order_date"),'order_id,'order_item_subtotal).cache()
+
+val gip = ords.groupBy('order_id).agg(sum('order_item_subtotal).as("order_revenue"),max('order_date).as("order_date")).orderBy('order_revenue.desc)
+
+gip.createOrReplaceTempView("gip")
+
+spark.sql("drop table if exists order_revenue")
+
+spark.sql("create table order_revenue stored as orc as select * from gip")
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+spark.sql("USE retail_db_kkd")
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
+
+val itms = spark.sql("select * from order_items").select('order_item_order_id,'order_item_subtotal)
+
+val ords = spark.sql("select * from orders").join(itms,'order_id === 'order_item_order_id).where("order_status IN('CLOSED','COMPLETE')").select(split('order_date," ")(0).as("order_date"),'order_id,'order_item_subtotal).cache()
+
+val gip = ords.select('*,regexp_replace('order_date,"-","").as("date")).groupBy('order_date).agg(sum('order_item_subtotal).as("order_revenue"),max('date).as("date")).orderBy('order_revenue.desc)
+
+val op = gip.select('*, split('order_date,"-").as("od_arr")).select('date.as("order_date").cast(IntegerType),'od_arr(1).as("order_month").cast(IntegerType),'od_arr(0).as("order_year").cast(IntegerType),'order_revenue)
+
+op.createOrReplaceTempView("op")
+spark.sql("drop table if exists daily_order_revenue")
+spark.sql("create table daily_order_revenue stored as orc as select * from op")
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+spark.sql("USE retail_db_kkd")
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
+
+val itms = spark.sql("select * from order_items").select('order_item_order_id).cache()
+
+val ords = spark.sql("select * from orders").select("order_id", "order_date", "order_customer_id", "order_status").cache()
+itms.show()
+ords.show()
+
+val gip = ords.join(itms,'order_id === 'order_item_order_id,"left_anti").drop("order_item_order_id")
+
+gip.show()
+
+gip.createOrReplaceTempView("gip")
+spark.sql("drop table if exists orders_anti")
+spark.sql("create table orders_anti stored as textfile row format delimited fields terminated by ',' as select * from gip")
+
+/*
+val gip = ords.join(itms,'order_id === 'order_item_order_id,"left_outer").where("order_item_order_id is null").drop("order_item_order_id")
+
+gip.show()
+
+gip.createOrReplaceTempView("gip")
+spark.sql("drop table if exists orders_outer")
+spark.sql("create table orders_outer stored as textfile row format delimited fields terminated by ',' as select * from gip")
+*/
+
+/*insert into orders_outer select * from orders o where o.order_id not in (select order_item_order_id from order_items);*/
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+--------------------------------------------
+Create table for orders for the data available under /data/retail_db/orders. Once table is created make sure data is loaded from the same location.
+
+* Use database retail_db_<YOUR_OS_USER_NAME>
+
+* It should have 4 fields order_id, order_date, order_customer_id, order_status
+
+* Go through the data and determine correct data types. For order_date make sure to use string.
+
+* Make sure field delimiter is ','
+
+* File Format: text
+-------------------------------------------------------
+Create table for order_items for the data available under /data/retail_db/order_items. Once table is created make sure data is loaded from the same location.
+
+* Use database retail_db_<YOUR_OS_USER_NAME>
+
+* It should have 6 fields order_item_id, order_item_order_id, order_item_product_id, order_item_quantity, order_item_subtotal, order_item_product_price
+
+* Make sure data types are int for first 4 fields and then float for last 2 fields.
+
+* File Format: orc
+
+Notes: As our source data under /data/retail_db/order_items is of text format, we will not be directly load data into the table with orc file format. Hence you need to use 2 step approach. As part of first step you need to load data to stage table in text format and then insert into the target table order_items (of orc format)
+--------------------------------------------------------
+
+Using orders, get count of complete or closed orders each day. Data should be loaded into new table.
+
+* Database: retail_db_<YOUR_OS_USER_NAME>
+
+* Target Table: daily_order_count
+
+* File Format: text
+
+* Field Names: order_date, order_count
+
+* Field Delimiter: ;
+
+-------------------------------------------------------------
+
+Using orders and order_items, get revenue for each day considering complete and closed orders. Data should be loaded into new table. orders is parent table and order_items is child table. order_items.order_item_order_id is the foreign key for orders.order_id.
+
+* Database: retail_db_<YOUR_OS_USER_NAME>
+
+* Target Table: daily_order_revenue
+
+* File Format: orc
+
+* Field Names: order_date, order_month, order_year, order_revenue
+
+* order_date, order_month and order_year should be of type integer. order_date should be stored as YYYYMMdd format.
+----------------------------------------------
+
+-------------------------------------------------------------
+Get all the orders which do not have corresponding order_items. Data should be loaded into new table. orders is parent table and order_items is child table. order_items.order_item_order_id is the foreign key for orders.order_id.
+
+* Database: retail_db_<YOUR_OS_USER_NAME>
+
+* Target Table: orders_outer
+
+* File Format: text
+
+* Field Delimiter: ,
+
+* Field Names: order_id, order_date, order_customer_id, order_status
+
+* Data Types should be from orders.
+-------------------------------------------------------

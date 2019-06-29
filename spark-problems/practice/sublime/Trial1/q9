@@ -1,0 +1,23 @@
+q9
+----
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.{spark => sprk}
+import sprk.sql.functions._
+import sprk.sql.expressions.Window
+
+val ords = spark.read.option("sep","\t").csv("/user/cloudera/data_prep/retail_db/orders_tab").toDF("order_id,order_date,order_customer_id,order_status".split(","):_*).select("order_id","order_customer_id").cache()
+
+ords.show()
+
+val cust = spark.read.option("sep","\t").csv("/user/cloudera/data_prep/retail_db/customers_tab").toDF("customer_id,customer_fname,customer_lname,customer_email,customer_password,customer_street,customer_city,customer_state,customer_zipcode".split(","):_*).select('customer_fname,'customer_lname,'customer_city,'customer_id).cache()
+
+cust.show()
+
+
+val itms = spark.read.option("sep","\t").csv("/user/cloudera/data_prep/retail_db/order_items_tab").toDF("order_item_id,order_item_order_id,order_item_product_id,order_item_quantity,order_item_subtotal,order_item_product_price".split(","):_*).select('order_item_order_id,'order_item_subtotal).groupBy('order_item_order_id).agg(sum('order_item_subtotal).as("order_amount")).where("order_amount>200").cache()
+
+itms.show()
+
+val joined = ords.join(itms,'order_item_order_id === 'order_id).join(cust,'order_customer_id === 'customer_id).selectExpr("customer_fname,customer_lname,customer_city,order_amount".split(","):_*)
+
+joined.write.mode("overwrite").csv("/user/cloudera/DA_SPARK/question9/output")

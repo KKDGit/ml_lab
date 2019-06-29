@@ -1,0 +1,19 @@
+question3
+------------
+spark2-shell --master yarn \
+--packages com.databricks:spark-avro_2.11:4.0.0,mysql:mysql-connector-java:5.1.6 \
+--conf spark.ui.port=4445 \
+--num-executors 4 \
+--executor-cores 2 \
+--executor-memory 3G
+--------------------
+spark2-shell \
+--packages com.databricks:spark-avro_2.11:4.0.0,mysql:mysql-connector-java:5.1.6 
+-------------------------
+
+import com.databricks.spark.avro._
+
+val rip = spark.read.text("/user/cloudera/data_prep/randomtextwriter").cache()
+val rop = rip.select(explode(split($"value"," ")).as("word")).groupBy("word").count().as("count").orderBy($"count".desc)
+
+rop.coalesce(8).write.mode("overwrite").avro("/user/cloudera/DA_SPARK/question3/output")

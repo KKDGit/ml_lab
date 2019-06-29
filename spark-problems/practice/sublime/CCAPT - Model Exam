@@ -1,0 +1,48 @@
+CCAPT - Model Exam
+------------------
+1.
+/user/`whoami`/cca175_practice_test1/problem1/data/stock_eod
+
+sqoop list-databases \
+--connect jdbc:mysql://quickstart.cloudera:3306 --username root --password cloudera
+
+sqoop list-tables \
+--connect jdbc:mysql://quickstart.cloudera:3306/nyse --username root --password cloudera
+
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/nyse \
+--username root --password cloudera \
+--table stock_eod --as-avrodatafile --split-by stockticker \
+--num-mappers 4 --target-dir /user/cloudera/cca175_practice_test1/problem1/data/stock_eod
+
+2.
+
+/user/`whoami`/cca175_practice_test1/problem2/data/customers
+
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db --username root --password cloudera \
+--query 'desc customers'
+
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username root --password cloudera \
+--as-textfile --fields-terminated-by ';' \
+--num-mappers 1 --target-dir /user/cloudera/cca175_practice_test1/problem2/data/customers \
+--query 'select customer_id,customer_fname,customer_lname,customer_street,customer_city,customer_state,customer_zipcode from customers where $CONDITIONS'
+
+3.
+
+spark.conf.set("spark.sql.shuffle.partitions",10)
+val ords = spark.read.csv("/user/cloudera/data_prep/it/retail_db/orders").toDF("order_id,order_date,order_customer_id,order_status".split(","):_*).where("substring(order_date,0,4) = '2014'")
+
+val cust = spark.read.csv("/user/cloudera/data_prep/it/retail_db/customers").toDF("customer_id,customer_fname,customer_lname,customer_email,customer_password,customer_street,customer_city,customer_state,customer_zipcode".split(","):_*)
+
+val ords_s = ords.select("order_id","order_customer_id").cache()
+val cust_s = cust.select("customer_fname","customer_lname","customer_id").cache()
+
+ords_s.show()
+cust_s.show()
+
+val op = cust_s.join(ords_s, 'order_customer_id === 'customer_id).groupBy('customer_id).agg(max('customer_fname).as("customer_fname"), max('customer_lname).as("customer_lname"), count('order_id).as("order_count")).drop('customer_id).orderBy('order_count.desc, 'customer_fname, 'customer_lname).coalesce(1)
+
+op.write.json("/user/cloudera/cca175_practice_test1/problem3/data/order_count_by_customer")

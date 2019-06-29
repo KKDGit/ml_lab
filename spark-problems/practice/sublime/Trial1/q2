@@ -1,0 +1,32 @@
+question2
+
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import scala.io.Source._
+
+val ordsRDD = sc.parallelize(fromFile("/home/cloudera/data_prep/retail_db/orders/part-m-00000").getLines.toList)
+val custRDD = sc.parallelize(fromFile("/home/cloudera/data_prep/retail_db/customers/part-m-00000").getLines.toList)
+
+val ordcols = "order_id,order_date,order_customer_id,order_status".split(",")
+
+val ordsDF = ordsRDD.map(x => 
+{
+val c = x.split(",") 
+(c(0), c(1), c(2), c(3))
+}
+).toDF(ordcols:_*)
+
+val custDF = custRDD.map(x => 
+{
+val c = x.split(",") 
+(c(0), c(1), c(2))
+}
+).toDF("customer_id", "customer_fname", "customer_lname") 
+
+
+val op = custDF.join(ordsDF,'order_customer_id === 'customer_id, "left_outer").where('order_id.isNull).select('customer_lname,'customer_fname).orderBy('customer_lname,'customer_fname)
+
+op.coalesce(1).rdd.map(_.mkString(", ")).toDF().write.mode("overwrite").text("/user/cloudera/DA_SPARK/question2/output1")
+
+op.coalesce(1).rdd.map(_.mkString(", ")).saveAsTextFile("/user/cloudera/DA_SPARK/question2/output")
+
+//op.coalesce(1).write.option("sep",", ").csv("/user/cloudera/DA_SPARK/question2/output2") -This will not Work

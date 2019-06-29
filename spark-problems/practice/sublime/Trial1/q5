@@ -1,0 +1,14 @@
+q5
+-------
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.{spark => sprk}
+import sprk.sql.functions._
+import sprk.sql.expressions.Window
+
+val ords = spark.read.csv("/user/cloudera/data_prep/retail_db/orders/").toDF("order_id,order_date,order_customer_id,order_status".split(","):_*)
+
+val cust = spark.read.csv("/user/cloudera/data_prep/retail_db/customers_3cols/").toDF("customer_id,customer_fname,customer_lname".split(","):_*)
+
+val joined = ords.join(cust, 'customer_id === 'order_customer_id).selectExpr("customer_id,customer_fname,order_id,order_status".split(","):_*).where("order_status like '%PENDING%'")
+
+joined.write.mode("overwrite").csv("/user/cloudera/DA_SPARK/question5/output")

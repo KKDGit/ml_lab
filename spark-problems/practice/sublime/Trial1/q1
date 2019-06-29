@@ -1,0 +1,32 @@
+question1
+---------------
+Instructions/Data Description/Output Requirements
+•	Details - Duration 40 minutes
+o	Data set is in folder /user/cloudera/data_prep/crime 
+o	Structure of data (ID,Case Number,Date,Block,IUCR,Primary Type,Description,Location Description,Arrest,Domestic,Beat,District,Ward,Community Area,FBI Code,X Coordinate,Y Coordinate,Year,Updated On,Latitude,Longitude,Location)
+o	File format - text file
+o	Delimiter - “,”
+o	Get monthly count of primary crime type, sorted by month in ascending and number of crimes per type in descending order
+o	Store the result in HDFS path /user/cloudera/DA_SPARK/question1/output
+o	Output File Format: TEXT
+o	Output Columns: month in YYYY-MM format, crime_count, crime_type
+o	Output Delimiter: \t (tab delimited)
+o	Output Compression: gzip
+-------
+import org.apache.{spark => sprk}
+import sprk.sql.functions._
+import sprk.sql.types._
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+val rip = spark.read.options(Map("header"->"true","inferSchema"->"true")).csv("/user/cloudera/data_prep/crime").cache()
+//05/15/2019 11:59:00 PM
+val mon = concat(substring('Date,7,4),lit("-"),substring('Date,1,2)).as("month")
+val gip = rip.select(mon,$"Primary Type".as("crime_type"),'ID).groupBy('month,'crime_type).agg(countDistinct('ID).as("crime_count")).orderBy('month.asc, 'crime_count.desc)
+
+gip.select("month", "crime_count", "crime_type").write.options(Map("sep"->"\t","compression"->"gzip","mode","overwrite")).csv("/user/cloudera/DA_SPARK/question1/output")
+
+
+gip.select("month", "crime_count", "crime_type").rdd.map(x => x.mkString("\t")).toDF().write.options(Map("compression"->"gzip")).text("/user/cloudera/DA_SPARK/question1/output1")
+
+spark.read.option("sep","\t").csv("/user/cloudera/DA_SPARK/question1/output").orderBy('_c0.asc, '_c1.cast(IntegerType).desc).show(50)
+
+spark.read.option("sep","\t").csv("/user/cloudera/DA_SPARK/question1/output1").orderBy('_c0.asc, '_c1.cast(IntegerType).desc).show(50)

@@ -1,0 +1,13 @@
+q7
+----
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.{spark => sprk}
+import sprk.sql.functions._
+import sprk.sql.expressions.Window
+
+val cust = spark.read.option("sep","\t").csv("/user/cloudera/data_prep/retail_db/customer_part_text_tab").toDF("customer_id,customer_fname,customer_city".split(","):_*).cache()
+cust.show()
+
+cust.printSchema
+
+cust.where("customer_city = 'Brownsville'").write.mode("overwrite").json("/user/cloudera/DA_SPARK/question7/output")

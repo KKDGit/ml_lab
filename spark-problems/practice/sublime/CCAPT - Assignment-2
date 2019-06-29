@@ -1,0 +1,62 @@
+CCAPT - Assignment-2
+----------------------
+Questions for this assignment
+----------------------------------
+Here is a string which contain order details '1,2013-07-25:00:00:00.0,11599,COMPLETE'. This hypothetical order is delimited or separated by comma (,). It contains order_id, order_date, order_customer_id and order_status.
+
+Write a single line of code which extract order_status and change the case to lower.
+---------------------------------
+val str = "1,2013-07-25:00:00:00.0,11599,COMPLETE"
+str.split(",")(3).toLowerCase()
+-----------------------------------
+Here is a string which contain order details '1,2013-07-25:00:00:00.0,11599,COMPLETE'. This hypothetical order is delimited or separated by comma (,). It contains order_id, order_date, order_customer_id and order_status. Date is in the form of YYYY-MM-dd:HH24:mi:ss
+
+Write a single line of code which extract year part (YYYY) from the order_date. Year should also be type casted as integer.
+-------------------------------------
+val str = "1,2013-07-25:00:00:00.0,11599,COMPLETE"
+str.split(",")(1).split("-")(0).toInt
+str.split(",")(1).substring(0,4).toInt
+---------------------------------
+We have orders data under /data/retail_db/orders/part-00000 which contain 68883 records. Each record or line is a string with 4 attributes or fields such as order_id,order_date,order_customer_id,order_status.
+
+Let us load data from /data/retail_db/orders/part-00000 or similar location from your environment into Scala List. Extract all the dates and create a new list which contain all unique dates.
+
+Notes: Use map reduce APIs to extract dates from the list.
+---------------------------------------
+import scala.io.Source
+
+val lines = Source.fromFile("/home/cloudera/data_prep/it/retail_db/orders/part-00000").getLines()
+val u_dates = lines.map(_.split(",")(1)).toSet
+
+------------------------------------
+We have order_items data under /data/retail_db/order_items/part-00000 which contain 172198 records. Each record or line is a string with 6 attributes or fields such as order_item_id,order_item_order_id,order_item_product_id,order_item_quantity,order_item_subtotal,order_item_product_price.
+
+Let us load data from /data/retail_db/order_items/part-00000 or similar location from your environment into Scala List. Develop a function getOrderRevenue which takes 2 arguments order_items list and order_item_order_id and compute revenue for given order_item_order_id. Revenue can be computed using order_item_subtotal.
+
+Notes: Use map reduce APIs come up with the logic to compute order revenue.
+--------------------------------------------------------
+import scala.io.Source
+val lines = Source.fromFile("/home/cloudera/data_prep/it/retail_db/order_items/part-00000").getLines().toList
+val tuples = lines.map(x=> { val k = x.split(","); (k(1).toInt, k(4).toFloat)})
+
+def getOrderRevenue(order_items: List[(Int,Float)], order_item_order_id:Int) = {
+order_items.filter(x => x._1 == order_item_order_id).map(x => x._2).reduce(_+_)
+}
+
+val grps = tuples.groupBy(x => x._1)
+
+val grps2 = tuples.groupBy(x => x._1).map(x => (x._1, x._2.map(_._2).sum))
+
+-------------------------------------------------------------
+We have hypothetical order item - 2,2,1073,1,199.99,199.99
+
+* It contains 6 fields which are comma seperated
+
+* order_item_id,order_item_order_id,order_item_product_id,order_item_quantity,order_item_subtotal,order_item_product_price
+
+Create immutable variable orderTuple which contain order_item_order_id as integer and order_item_subtotal as float or double.
+-----------------------------
+
+val str = "2,2,1073,1,199.99,199.99"
+val orderTuple = (str.split(",")(1).toInt, str.split(",")(4).toFloat)
+

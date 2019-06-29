@@ -1,0 +1,15 @@
+q6
+--------
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.{spark => sprk}
+import sprk.sql.functions._
+import sprk.sql.expressions.Window
+
+val cust = spark.read.parquet("/user/cloudera/data_prep/retail_db/customer_part_parquet").cache()
+cust.printSchema
+
+val op = cust.where("customer_fname like '%Mary%'").groupBy('customer_city,'customer_fname).count().orderBy('customer_fname)
+
+op.show()
+
+op.map(_.mkString("|")).write.mode("overwrite").text("/user/cloudera/DA_SPARK/question6/output")

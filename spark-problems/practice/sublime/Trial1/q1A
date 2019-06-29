@@ -1,0 +1,9 @@
+question1A
+-----------
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+val rip = spark.read.option("header","true").csv("/user/cloudera/data_prep/crime").select("ID","Primary Type", "Location Description").cache()
+val rip_filt = rip.filter($"Location Description" === "RESIDENCE")
+val rop = rip_filt.select('ID.as("id"), $"Primary Type".as("crime_type")).groupBy("crime_type").agg(countDistinct("id").as("num_incidents")).orderBy($"num_incidents".desc).limit(3)
+rop.write.json("/user/cloudera/DA_SPARK/question1A/output")
+
+rop.show()

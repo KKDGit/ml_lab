@@ -17,7 +17,7 @@ def procedureSyntax(name: String) {
 
 procedureSyntax("Hi Procedural")
 
-def add(a: Int, b:Int) {
+def add(a: Int, b:Int) = {
  a+b
 }
 add(2,3)

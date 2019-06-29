@@ -1,0 +1,28 @@
+q12
+---
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.{spark => sprk}
+import sprk.sql.functions._
+import sprk.sql.expressions.Window
+
+val prods = spark.sql("select * from retail_db_txt.products").select("product_category_id" , "product_name", "product_price").cache()
+
+prods.show()
+
+val win = Window.partitionBy('product_category_id).orderBy('product_price.desc)
+val ran = rank().over(win).as("rank")
+
+val op = prods.select('*, ran).where("rank =1").orderBy('product_category_id,'product_name)
+
+op.map(_.mkString("|")).write.text("/user/cloudera/DA_SPARK/question12/output")
+
+
+
+val win1 = Window.partitionBy('product_category_id).orderBy('product_price.desc,'product_name)
+val ran1 = rank().over(win1).as("rank")
+
+val op1 = prods.select('*, ran1).where("rank =1").orderBy('product_category_id,'product_name)
+
+op1.map(_.mkString("|")).write.mode("overwrite").text("/user/cloudera/DA_SPARK/question12/output1")
+
+println(op.count(),op1.count())

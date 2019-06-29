@@ -44,8 +44,8 @@ fred.weight = 65.0
 
 fred.weight
 
-fred.weight = -5.0
 
+//fred.weight = -5.0
 
 class TruckLoad extends HeightAndWeight {
 	import scala.collection.mutable
@@ -66,3 +66,7 @@ truck.height
 truck.height = 20.0
 
 truck.height
+
+//-------------------
+
+fred.weight = -5.0

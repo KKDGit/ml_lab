@@ -1,18 +1,14 @@
 ============================================================
-Linux
+1. Linux
 ============================================================
 hostname/hostname -f
 hostname --help
 ls -ltrh <folder>
 
-
-
-HDFS
+===========
+2. HDFS
 ===========
 avro-tools getmeta hdfs://quickstart.cloudera:8020/user/cloudera/arun/problem1/orders/part-m-00000.avro
-
-hadoop fs -cat /user/cloudera/arun/problem1/result4a-csv/* | wc -l
-hadoop fs -cat /user/cloudera/arun/problem1/result4a-csv/* | head
 
 parquet-tools head -n 10 hdfs://quickstart.cloudera:8020/user/cloudera/arun/problem1/result4a-snappy/part-00009-c2b3e475-5e3f-42d7-9627-94f6e4342733-c000.snappy.parquet
 
@@ -20,7 +16,8 @@ parquet-tools meta hdfs://quickstart.cloudera:8020/user/cloudera/arun/problem1/r
 
 hadoop fs -chmod -R 765 /user/kranthidr/arun/problem2/products
 
-Spark
+==================
+3. Spark
 ==================
 ------------------
 MySql Connection
@@ -148,7 +145,7 @@ val seq_df =  seq.map(x=>{ val d = x._2.toString.split("\t") (d(0),d(1),d(2),d(3
 coalesce() to limit files generated to write. Use repartition when coalesce is not working
 
 ============================
-Hive
+4. Hive
 ==============================
 avro-tools getschema 'hdfs://nn01.itversity.com:8020/user/kranthidr/arun/problem3/retail_stage.db/orders/part-m-00000.avro' > orders.avsc
 hadoop fs -put orders.avsc /user/kranthidr/arun/problem3/retail_stage.db/orders.avsc
@@ -170,7 +167,7 @@ from kkd_orders_sqoop;
 
 
 ============================================================
-Sqoop
+5. Sqoop
 ============================================================
 sqoop help <command>
 sqoop list-databases/list-tables/eval/import/export/import-all-tables/merge/job
@@ -203,5 +200,3 @@ sqoop job --create hive_export_products_incr -- export \
 // --update-mode has two option allowinsert- it will not insert if record is not there... updateonly -- only updates 
 
 sqoop job --exec hive_export_products_incr
-
-===============================

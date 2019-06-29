@@ -1,0 +1,89 @@
+1.
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username root --password cloudera \
+--table orders --as-textfile --fields-terminated-by ',' \
+--num-mappers 2 --target-dir /user/cloudera/sqoop_and_hive_practice/problem1/solution/orders
+
+2.
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username root --password cloudera \
+--table order_items --as-textfile --fields-terminated-by ';' \
+--num-mappers 2 --target-dir /user/cloudera/sqoop_and_hive_practice/problem2/solution/order_items
+
+3.
+
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username root --password cloudera \
+--query 'select order_id, order_date, order_customer_id, order_status, order_item_id, order_item_product_id, order_item_subtotal from order_items join orders on order_id = order_item_order_id WHERE $CONDITIONS' \
+--as-textfile --fields-terminated-by ';' --split-by order_id \
+--num-mappers 2 --target-dir /user/cloudera/sqoop_and_hive_practice/problem3/solution/order_details
+
+/*
+"select o.order_id, o.order_date, o.order_customer_id, o.order_status, oi.order_item_id, oi.order_item_product_id, oi.order_item_subtotal from orders o inner join order_items oi on (o.order_id = oi.order_item_order_id) WHERE \$CONDITIONS" \
+*/
+4.
+create external table orders 
+(order_id int, order_date string, order_customer_id int, order_status string)
+row format delimited fields terminated by ','
+stored as textfile
+location '/user/cloudera/sqoop_and_hive_practice/problem1/solution/orders';
+
+5.
+sqoop import \
+--connect jdbc:mysql://quickstart.cloudera:3306/retail_db \
+--username root --password cloudera \
+--table order_items --as-textfile --fields-terminated-by ';' \
+--num-mappers 4 --hive-import --hive-database sqoop_and_hive_practice --hive-table order_items
+
+6.
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+spark.sql("USE sqoop_and_hive_practice")
+
+val ords = spark.sql("select * from orders")
+val itms = spark.sql("select * from order_items")
+val joined = ords.join(itms, 'order_id === 'order_item_order_id).where("order_status in('CLOSED','COMPLETE')").cache()
+joined.show()
+
+val filt = joined.select(split('order_date," ")(0).as("order_date"),'order_item_product_id.as("product_id"),'order_item_subtotal) 
+
+val op = filt.groupBy('order_date, 'product_id).agg(sum('order_item_subtotal).as("revenue")).coalesce(1).orderBy('order_date.asc, 'revenue.desc)
+
+op.show()
+
+op.createOrReplaceTempView("op")
+
+spark.sql("create table product_revenue_daily stored as avro as select * from op")
+
+7.
+
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera:3306 \
+--username root --password cloudera \
+--query 'create database sqoop_and_hive_practice'
+
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera:3306/sqoop_and_hive_practice \
+--username root --password cloudera \
+--query 'create table order_details_problem7 (order_id int, order_date varchar(50), order_customer_id int, order_status varchar(50), order_item_id int, order_item_product_id int, order_item_subtotal double)'
+
+sqoop export \
+--connect jdbc:mysql://quickstart.cloudera:3306/sqoop_and_hive_practice \
+--username root --password cloudera --table order_details_problem7 \
+--export-dir /user/cloudera/sqoop_and_hive_practice/problem3/solution/order_details \
+--input-fields-terminated-by ';' --columns 'order_id, order_date, order_customer_id, order_status, order_item_id, order_item_product_id, order_item_subtotal'
+
+8.
+
+sqoop eval \
+--connect jdbc:mysql://quickstart.cloudera:3306/sqoop_and_hive_practice \
+--username root --password cloudera \
+--query 'create table product_revenue_daily_problem8 (order_date varchar(50), product_id int, revenue double)'
+
+
+sqoop export \
+--connect jdbc:mysql://quickstart.cloudera:3306/sqoop_and_hive_practice \
+--username root --password cloudera --table product_revenue_daily_problem8 \
+--hcatalog-database sqoop_and_hive_practice --hcatalog-table product_revenue_daily

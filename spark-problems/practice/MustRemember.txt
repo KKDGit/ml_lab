@@ -1,4 +1,77 @@
-Cloudera Paths
+============================================================
+1. Linux
+============================================================
+hostname/hostname -f
+hostname --help
+ls -ltrh <folder>
+
+===========
+2. HDFS
+===========
+hadoop fs -cat /user/cloudera/arun/problem1/result4a-csv/* | wc -l
+hadoop fs -cat /user/cloudera/arun/problem1/result4a-csv/* | head -n 10
+
+
+==================
+3. Spark
+==================
+1.
+spark-shell \
+--packages com.databricks:spark-avro_2.11:4.0.0,mysql:mysql-connector-java:5.1.6 \
+--master yarn \
+--conf spark.ui.port=22222 \
+--num-executors 4 \
+--executor-cores 2 \
+--executor-memory 3G 
+
+2.
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
+import org.apache.hadoop.io._
+import org.apache.hadoop.io.LongWritable
+import org.apache.hadoop.io.Text
+import org.apache.hadoop.conf.Configuration
+
+3.
+import org.apache.spark.sql.catalyst.ScalaReflection
+val my_schema = ScalaReflection.schemaFor[Product].dataType.asInstanceOf[StructType]
+
+Spark Streaming
+-------------------------------------------
+1.
+https://spark.apache.org/docs/2.3.0/streaming-flume-integration.html
+
+============================
+4. Hive and Beeline
+==============================
+beeline> help
+beeline> !connect jdbc:hive2://localhost:10000
+user->enter
+password->enter
+
+hive>set io.compression.codecs; --> It will list the compression codecs
+//org.apache.hadoop.io.compress.DefaultCodec,
+org.apache.hadoop.io.compress.GzipCodec,
+org.apache.hadoop.io.compress.BZip2Codec,
+org.apache.hadoop.io.compress.DeflateCodec,
+org.apache.hadoop.io.compress.SnappyCodec,
+org.apache.hadoop.io.compress.Lz4Codec
+
+SET hive.exec.compress.output=true;
+SET io.seqfile.compression.type=BLOCK; /// OR USE TBLPROPERTIES('orc.compression'='SNAPPY')
+============================================================
+5. Sqoop
+============================================================
+
+1.
+val mysql_driver = "com.mysql.jdbc.Driver"
+2.
+val jdbc_url = jdbc:mysql://gateway:3306/retail_db 
+3.
+mysql --host=ms.itversity.com --port=3306 --user=retail_user --password=itversity
+
+
+==============================
+6. Cloudera Paths
 ========================
 /etc/hadoop/conf/*
 
@@ -31,53 +104,11 @@ core-site.xml
 <property>
     <name>io.compression.codecs</name>
     <value>
-	org.apache.hadoop.io.compress.DefaultCodec,
-	org.apache.hadoop.io.compress.GzipCodec,
-	org.apache.hadoop.io.compress.BZip2Codec,
-	org.apache.hadoop.io.compress.DeflateCodec,
-	org.apache.hadoop.io.compress.SnappyCodec,
-	org.apache.hadoop.io.compress.Lz4Codec
-	</value>
+    org.apache.hadoop.io.compress.DefaultCodec,
+    org.apache.hadoop.io.compress.GzipCodec,
+    org.apache.hadoop.io.compress.BZip2Codec,
+    org.apache.hadoop.io.compress.DeflateCodec,
+    org.apache.hadoop.io.compress.SnappyCodec,
+    org.apache.hadoop.io.compress.Lz4Codec
+    </value>
  </property>
-
-HDFS
-===========================
-hadoop fs -cat /user/cloudera/data_prep/crime/* | head
-
-
-Sqoop and Mysql
-=============================================================
-1.
-val mysql_driver = "com.mysql.jdbc.Driver"
-2.
-val jdbc_url = jdbc:mysql://gateway:3306/retail_db 
-3.
-mysql --host=ms.itversity.com --port=3306 --user=retail_user --password=itversity
-
-=============================================================
-Spark
-============================================================
-1.
-spark-shell \
---packages com.databricks:spark-avro_2.11:4.0.0,mysql:mysql-connector-java:5.1.6 \
---master yarn \
---conf spark.ui.port=22222 \
---num-executors 4 \
---executor-cores 2 \
---executor-memory 3G 
-
-2.
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
-import org.apache.hadoop.io._
-import org.apache.hadoop.io.LongWritable
-import org.apache.hadoop.io.Text
-import org.apache.hadoop.conf.Configuration
-
-import org.apache.spark.sql.catalyst.ScalaReflection
-val my_schema = ScalaReflection.schemaFor[Product].dataType.asInstanceOf[StructType]
-
-Spark Streaming
-========================================================
-1.
-https://spark.apache.org/docs/2.3.0/streaming-flume-integration.html
-=========================================================

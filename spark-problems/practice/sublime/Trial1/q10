@@ -1,0 +1,13 @@
+q10
+-----
+spark.conf.set("spark.sql.shuffle.partitions", 10)
+import org.apache.{spark => sprk}
+import sprk.sql.functions._
+import sprk.sql.expressions.Window
+
+
+val cust = spark.sql("select * from retail_db_txt.customers_hive")
+
+cust.show()
+
+cust.where("customer_fname like '%Rich%'").select(concat('customer_fname, lit(" "),'customer_lname,lit(":"),'customer_city)).write.text("/user/cloudera/DA_SPARK/question10/output")

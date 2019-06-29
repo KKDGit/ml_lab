@@ -2,6 +2,7 @@
 /* Copyright (C) 2010-2018 Escalate Software, LLC. All rights reserved. */
 
 package koans
+
 import org.scalatest.Matchers
 import support.KoanSuite
 import org.scalatest.SeveredStackTraces
