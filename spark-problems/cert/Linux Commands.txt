@@ -21,4 +21,9 @@ Codename:	Core
 	ssh-keygen -t rsa --- Press enter for each line 
 	cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 	chmod og-wx ~/.ssh/authorized_keys 
+	
+	winodws
+	
 ---------------------------------------
+5.
+kkd@BLRWX10362:C:/Users/kkd/_Work/
