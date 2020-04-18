@@ -1,23 +1,17 @@
 val conversionKilosToPounds = 2.20462262185
 
 class Person(nm: String, wt: Double) {
-
 	def name: String = nm
-
 	private[this] var wtIbs = wt
-
 	def weightInPounds: Double = wtIbs
-
 	def weightInPounds_=(newWeight: Double): Unit = {
 		wtIbs = newWeight
 	}
-
-  def weightInKilos: Double = weightInPounds / conversionKilosToPounds
-  
+  def weightInKilos: Double =
+		weightInPounds/conversionKilosToPounds
   def weightInKilos_=(newWeight: Double): Unit = {
   	weightInPounds = newWeight * conversionKilosToPounds
   }
-
 }
 
 val fred = new Person("Fred", 120)

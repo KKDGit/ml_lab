@@ -24,7 +24,7 @@ trait StopOnFirstFailure extends SuiteMixin { this: Suite =>
         val tests = testNames.iterator
         var failed = false
         for (test <- tests) {
-          if (failed == false) {
+          if (!failed) {
             val status = runTest(test, args)
             statusList += status
             failed = !status.succeeds()

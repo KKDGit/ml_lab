@@ -4,7 +4,6 @@ trait HeightAndWeight {
 }
 
 trait HeightAndWeightAsGenerated {
-
 	def height: Double
 	def height_=(d: Double): Unit
 
@@ -45,7 +44,7 @@ fred.weight = 65.0
 fred.weight
 
 
-//fred.weight = -5.0
+//fred.weight = -5.0 --> shown in last line
 
 class TruckLoad extends HeightAndWeight {
 	import scala.collection.mutable
@@ -60,13 +59,11 @@ class TruckLoad extends HeightAndWeight {
 }
 
 val truck = new TruckLoad
-
 truck.height
+truck.weight
 
 truck.height = 20.0
-
 truck.height
-
-//-------------------
+truck.weight
 
 fred.weight = -5.0

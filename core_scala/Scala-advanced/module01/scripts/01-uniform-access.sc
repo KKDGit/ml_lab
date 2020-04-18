@@ -12,7 +12,8 @@ p1.weightInPounds
 
 
 case class Person(name: String, weightInPounds: Double) {
-  def weightInKilos = weightInPounds / conversionKilosToPounds
+  def weightInKilos: Double =
+    weightInPounds / conversionKilosToPounds
 }
 
 val p2 = Person("Fred", 120)

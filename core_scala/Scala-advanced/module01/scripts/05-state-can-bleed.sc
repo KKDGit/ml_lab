@@ -10,9 +10,16 @@ val all = Seq(alice, bob)
 def heaviestPerson(people: Seq[Person]): Person =
 	people.maxBy(_.weight)
 
+def lightestPerson(people: Seq[Person]): Person =
+	people.minBy(_.weight)
+
 
 heaviestPerson(all)
+
+lightestPerson(all)
 
 bob.weight = 122
 
 heaviestPerson(all)
+
+lightestPerson(all)
