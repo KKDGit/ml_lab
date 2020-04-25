@@ -1,5 +1,7 @@
-case class Address(street: String, city: String, postCode: Option[String])
-case class Person(name: String, phone: Option[String], address: Option[Address])
+case class Address(street: String, city: String,
+                   postCode: Option[String])
+case class Person(name: String, phone: Option[String],
+                  address: Option[Address])
 
 val harry = Person("Harry", None, Some(Address(
   "123 Little Whinging way", "Purley", Some("PN22 6RT")
@@ -26,7 +28,6 @@ if (s.isInstanceOf[String]) {
   s.asInstanceOf[String].reverse
 }
 
-
 // but beware type erasure:
 def withIntStringMap(x: Any): Int = x match {
   case m: Map[_, _] =>
@@ -40,3 +41,12 @@ def withIntStringMap(x: Any): Int = x match {
 withIntStringMap(Map(1 -> "one"))
 withIntStringMap(List(1))
 withIntStringMap(Map("One" -> 1))
+
+def withMap(x: Any): Int = x match {
+  case m: Map[Int, String] => m.head._1 * m.head._1
+  case _ => 0
+}
+
+withMap(Map(1 -> "one"))
+withMap(List(1))
+withMap(Map("One" -> 1))

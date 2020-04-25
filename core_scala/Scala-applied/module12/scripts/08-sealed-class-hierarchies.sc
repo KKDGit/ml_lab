@@ -12,5 +12,6 @@ val xs = List(1,2,3)
 def matchList(l: List[Int]): String = {
   l match {
     case a :: rest => "it's a non empty list"
+    // case Nil => "it's a empty list"
   }
 }

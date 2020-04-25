@@ -19,7 +19,8 @@ o2.getOrElse(0)
 def matchTuple3(tup: (Int, Boolean, String)): String = tup match {
   case (1, flag, string) => s"a 1 followed by $flag and $string"
   case (i, true, "Fred") => s"a true Fred with int $i"
-  case (a, b, c)         => s"Some other tuple int $a, flag $b, string $c"
+  case (a, b, c)         => s"Some other tuple int $a, " +
+    s"flag $b, string $c"
 }
 
 
@@ -32,7 +33,8 @@ matchTuple3((2, false, "Fred"))
 
 def matchList(xs: List[Int]): String = xs match {
   case 1 :: 2 :: rest => s"A 1, 2 list followed by $rest"
-  case a :: b :: _ => s"A list of at least 2 items, starting with $a, $b"
+  case a :: b :: _ => s"A list of at least 2 items, " +
+    s"starting with $a, $b"
   case a :: Nil => s"A single element list of $a"
   case Nil => "The empty list"
 }
@@ -46,7 +48,8 @@ matchList(Nil)
 
 def matchSeq(xs: Vector[Int]): String = xs match {
   case 1 +: 2 +: rest => s"A 1, 2 vector followed by $rest"
-  case Vector(a, b, rest @ _*) => s"A vector of at least 2 items, starting with $a, $b, rest is $rest"
+  case Vector(a, b, rest @ _*) => s"A vector of at least 2 items, " +
+    s"starting with $a, $b, rest is $rest"
   case Vector(a) => s"A single element vector of $a"
   case Vector() => "The empty vector"
 }
@@ -56,6 +59,7 @@ matchSeq(Vector(1,2))
 matchSeq(Vector(1,3,4))
 matchSeq(Vector(4))
 matchSeq(Vector.empty)
+matchSeq(Vector())
 
 
 import scala.util._
@@ -71,14 +75,17 @@ matchTry(Try(4/0))
 
 def match1(xs: Seq[Int]): String = xs match {
     case Seq(1, 2, rest) => s"A 1, 2 collection followed by $rest"
-    case Seq(a, b, rest @ _*) => s"A collection of at least 2 items, starting with $a, $b, rest is $rest"
+    case Seq(a, b, rest @ _*) => s"A collection of at least " +
+      s"2 items, starting with $a, $b, rest is $rest"
     case Seq(a) => s"A single element collection of $a"
     case Seq() => "The empty collection"
 }
 
 match1(List(1,2,3))
 match1(List(1,2))
+match1(List(1,2,3,4,5))
 match1(List(1,3,4))
+match1(List(1,3,4,5,6))
 match1(List(4))
 match1(Nil)
 

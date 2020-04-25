@@ -31,26 +31,36 @@ object Coords {
   }.toOption
 }
 
-coordsStr match {
-  case Coords(x, y) =>
-    println(s"x = $x")
-    println(s"y = $y")
-}
-
 object CoordSeq {
   def unapplySeq(coordsStr: String): Option[Seq[Double]] = Try {
     coordsStr.split(",").toList.map(_.trim.toDouble)
   }.toOption
 }
 
-coordsStr match {
-  case CoordSeq(c @ _*) =>
-    c foreach println
+def matchCoords1(coordsStr: String): Unit = coordsStr match {
+  case Coords(x, y) =>
+    println(s"x = $x")
+    println(s"y = $y")
 }
 
-coordsStr match {
+def matchCoords2(coordsStr: String): Unit = coordsStr match {
+case CoordSeq(c @ _*) =>
+c foreach println
+}
+
+def matchCoords3(coordsStr: String): Unit = coordsStr match {
   case CoordSeq(x, y, _*) =>
     println(x)
     println(y)
 }
 
+matchCoords1("-121.432, 34.002")
+matchCoords2("-121.432, 34.002")
+matchCoords3("-121.432, 34.002")
+
+//matchCoords1("KranthiKumar")
+//scala.MatchError: -121.432 34.002 (of class java.lang.String)
+//matchCoords2("KranthiKumar")
+//scala.MatchError: -121.432 34.002 (of class java.lang.String)
+//matchCoords3("Kranthi,Kumar")
+//scala.MatchError: -121.432 34.002 (of class java.lang.String)
