@@ -3,15 +3,15 @@
 
 package koans
 
-import org.scalatest.Matchers
-import support.BlankValues._
-import support.StopOnFirstFailure
+import koans.support.StopOnFirstFailure
+import org.scalatest.{FunSpec, Matchers, SeveredStackTraces}
 
-import scala.BigDecimal.{double2bigDecimal, int2bigDecimal}
-import org.scalatest.{FunSpec, SeveredStackTraces}
+import scala.BigDecimal.int2bigDecimal
+import scala.collection.mutable
+import scala.util.{Failure, Success, Try}
 
 // And here are the specs you have to satisfy
-class Module12 extends FunSpec with Matchers with StopOnFirstFailure with SeveredStackTraces {
+class Module12Sol2020Apr extends FunSpec with Matchers with StopOnFirstFailure with SeveredStackTraces {
 
   /*
    * Below is a spec for a bank account handler method. The case classes are provided for deposit,
@@ -25,9 +25,7 @@ class Module12 extends FunSpec with Matchers with StopOnFirstFailure with Severe
   // of each, and the Transactions extend the Transaction sealed class providing the constructor params.
 
   sealed class AccountType
-
   case object Checking extends AccountType
-
   case object Savings extends AccountType
 
 
@@ -50,11 +48,11 @@ class Module12 extends FunSpec with Matchers with StopOnFirstFailure with Severe
   class Account {
     private var bal: BigDecimal = 0
 
-    def balance = bal
+    def balance: BigDecimal = bal
 
-    def deposit(amnt: BigDecimal) = bal += amnt
+    def deposit(amnt: BigDecimal): Unit = bal += amnt
 
-    def withdrawal(amnt: BigDecimal) = bal -= amnt
+    def withdrawal(amnt: BigDecimal): Unit = bal -= amnt
   }
 
 
@@ -74,21 +72,20 @@ class Module12 extends FunSpec with Matchers with StopOnFirstFailure with Severe
         case _ => throw new IllegalArgumentException("Unknown account type")
       }
 
-    def openAccount(accountType: AccountType, number: String) = {
+    def openAccount(accountType: AccountType, number: String): mutable.Map[String, Account] = {
       val account = new Account
       accountsMapForType(accountType) += number -> account
     }
 
     // a convenience method to get the right account map type for the given account type - will be used in
     // your implementation below.
-    def getAccount(accountType: AccountType, number: String) =
+    def getAccount(accountType: AccountType, number: String): Account =
       accountsMapForType(accountType)(number) // note how the scala rules start to come together, like currying
 
 
     // This is the method you have to complete - add cases into the transaction match body to meet all the specs below
-    def applyTransaction(transaction: Transaction) =
+    def applyTransaction(transaction: Transaction): Any =
       transaction match {
-        // OTHER CASES GO HERE!
         // The next line should also be replaced - it's just to get things to compile, by now you
         // should know why (the rules of scala type inference)
         case BalanceEnquiry(accountType, accountNum) =>
@@ -110,15 +107,11 @@ class Module12 extends FunSpec with Matchers with StopOnFirstFailure with Severe
           getAccount(Checking, accountNum).withdrawal(amount)
 
         case OpenAccount(accountType, accountNum) =>
-          try {
-            getAccount(accountType, accountNum)
-            throw new IllegalStateException
+          val triedAccount: Try[Account] = Try(getAccount(accountType, accountNum))
+          triedAccount match {
+            case Success(_: Account) => throw new IllegalStateException
+            case Failure(_) => openAccount (accountType, accountNum)
           }
-          catch {
-            case e: NoSuchElementException => // OK, continue...
-          }
-          openAccount(accountType, accountNum)
-
         case _ => throw new IllegalArgumentException("Unknown transaction type")
       }
   }
@@ -236,8 +229,9 @@ class Module12 extends FunSpec with Matchers with StopOnFirstFailure with Severe
           Account.applyTransaction(Withdrawal(Checking, "003", 800))
         }
 
-        // should still have 200 left
-        Account.applyTransaction(BalanceEnquiry(Checking, "003")) should be(-600)
+        Account.applyTransaction(Withdrawal(Checking, "003", 400))
+        // should still have -1000 left
+        Account.applyTransaction(BalanceEnquiry(Checking, "003")) should be(-1000)
       }
     }
 
