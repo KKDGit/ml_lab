@@ -12,6 +12,7 @@ import scala.concurrent._
 import duration._
 import ExecutionContext.Implicits.global
 
+
 class Module01Sol1 extends KoanSuite with Matchers {
 
   /*
