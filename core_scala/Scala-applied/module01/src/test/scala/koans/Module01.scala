@@ -7,6 +7,7 @@ import org.scalatest.Matchers
 import support.KoanSuite
 import org.scalatest.SeveredStackTraces
 
+
 class Module01 extends KoanSuite with Matchers with SeveredStackTraces {
 
   test ("Something works") {

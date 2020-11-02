@@ -20,25 +20,22 @@ def withTransaction[A](db: DB)(fn: Session => A): A = {
   }
 }
 
+trait DBConnection{val db:DB}
 
-object PostgresDBDetails {
-  val dbURL: String = "jdbc:postgresql://localhost:5432/data"
-  val dbUser: String = "user"
-  val dbPass: String = "pass"
+class PostgresDBConnection(val dbURL:String,
+                           val dbUser:String,
+                           val dbPass:String)
+  extends DBConnection {
+  val db = DB(dbURL, dbUser, dbPass)
 }
 
-object PostgresDBConnection {
-  import PostgresDBDetails._  // hard wired above
-  def db = DB(dbURL, dbUser, dbPass)
-}
-
-class UserManagement {
-  val db = PostgresDBConnection.db  // more hard wiring
-
+class UserManagement(dbConn:DBConnection) {
+  val db = dbConn.db
   def findUser(id: Int): User =
     withTransaction(db) { implicit session =>
       session.query(s"select * from users where id = $id")
     }
-} //why implicit is used go to 03.implicits.sc
+}
 
-(new UserManagement).findUser(123)
+val dbConn = new PostgresDBConnection("url", "user", "pass")
+new UserManagement(dbConn).findUser(123)

@@ -11,6 +11,7 @@ trait StdDBConfig extends DBConfig {
 }
 
 object StdDBConfig extends StdDBConfig
+//selfless trait pattern
 
 trait StdWSConfig extends WSConfig {
   override val wsName: String = "SomeWS"
@@ -34,8 +35,12 @@ class WSCall(implicit wSConfig: WSConfig) {
 trait AllResources extends DBConfig with WSConfig
 
 object StdAllResources extends AllResources with StdWSConfig with StdDBConfig
+//we can use implicit here and not to pass to
+//val system = new ImportantSystem() at 49
 
 class ImportantSystem(implicit allResources: AllResources) {
+  //Instead of AllResources if DBConfig or WSConfig is given
+  //it will not work
   val dbQuery = new DBQuery() // injected implicitly
   val wsCall = new WSCall()   // injected implicitly
 
